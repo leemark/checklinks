@@ -3,6 +3,7 @@
   "name": "CheckLinks",
   "version": "1.0.0",
   "description": "Check all hyperlinks on a page for broken links.",
+  "homepage_url": "https://leemark.github.io/checklinks/",
   "permissions": [
     "activeTab",
     "scripting"
