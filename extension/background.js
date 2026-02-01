@@ -94,6 +94,11 @@ async function checkLinksWithConcurrency(tabId, urls, concurrency = 3) {
   }
 }
 
+const FETCH_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+};
+
 async function checkSingleLink(url) {
   // Skip non-HTTP schemes
   if (/^(mailto:|tel:|javascript:|data:)/.test(url)) {
@@ -110,7 +115,8 @@ async function checkSingleLink(url) {
   try {
     const response = await fetch(url, {
       method: "HEAD",
-      redirect: "manual",
+      headers: FETCH_HEADERS,
+      redirect: "follow",
       signal: controller.signal,
       credentials: "omit"
     });
@@ -121,12 +127,27 @@ async function checkSingleLink(url) {
       return await checkWithGet(url);
     }
 
+    const redirected = response.redirected;
+    const finalUrl = response.url;
+
+    // If the response followed a redirect, report it as a redirect
+    // even though the final status is 200
+    if (redirected && response.ok) {
+      return {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        category: "redirect",
+        redirectedTo: finalUrl
+      };
+    }
+
     return {
       url,
       status: response.status,
       statusText: response.statusText,
       category: categorize(response.status),
-      redirectedTo: response.headers.get("Location") || null
+      redirectedTo: redirected ? finalUrl : null
     };
   } catch (err) {
     clearTimeout(timeoutId);
@@ -145,18 +166,32 @@ async function checkWithGet(url) {
   try {
     const response = await fetch(url, {
       method: "GET",
-      redirect: "manual",
+      headers: FETCH_HEADERS,
+      redirect: "follow",
       signal: controller.signal,
       credentials: "omit"
     });
     clearTimeout(timeoutId);
+
+    const redirected = response.redirected;
+    const finalUrl = response.url;
+
+    if (redirected && response.ok) {
+      return {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        category: "redirect",
+        redirectedTo: finalUrl
+      };
+    }
 
     return {
       url,
       status: response.status,
       statusText: response.statusText,
       category: categorize(response.status),
-      redirectedTo: response.headers.get("Location") || null
+      redirectedTo: redirected ? finalUrl : null
     };
   } catch (err) {
     clearTimeout(timeoutId);
