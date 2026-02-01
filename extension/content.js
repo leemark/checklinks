@@ -33,7 +33,13 @@
 
     const title = document.createElement("span");
     title.className = "checklinks-title";
-    title.textContent = "CheckLinks";
+
+    const titleIcon = document.createElement("span");
+    titleIcon.className = "checklinks-title-icon";
+    titleIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#444"/><path d="M13 24l8 9 14-16" stroke="#4CAF50" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+
+    title.appendChild(titleIcon);
+    title.appendChild(document.createTextNode("CheckLinks"));
 
     const statusEl = document.createElement("span");
     statusEl.className = "checklinks-status";
