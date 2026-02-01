@@ -10,6 +10,7 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
   - Red: broken (4xx/5xx)
   - Gray: timeout or network error
 - **Floating results panel** — draggable, closeable panel with sorted results list, summary counts, and progress bar. Stays open until you close it and can be moved out of the way.
+- **Filter & scroll-to** — filter results by status category and click any result to scroll directly to the link on the page
 - **Detailed error reporting** — network errors are classified (DNS failure, connection refused, SSL error, timeout, etc.) with explanations shown in the results
 - **CSV export** — download scan results as a CSV file
 - **Throttled requests** — checks 3 links concurrently with delays between requests using HEAD (with GET fallback) to avoid overwhelming servers
@@ -19,7 +20,7 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
 
 1. Clone this repository:
    ```
-   git clone https://github.com/<your-username>/checklinks.git
+   git clone https://github.com/leemark/checklinks.git
    ```
 2. Open Chrome and go to `chrome://extensions`
 3. Enable **Developer mode** (toggle in the top right)
@@ -66,6 +67,9 @@ checklinks/
     content.js       # Content script — link scraping, results panel, and overlays
     content.css      # Panel and overlay styles
     icons/           # Extension icons (16/32/48/128px)
+  docs/
+    index.html       # Landing page (GitHub Pages)
+    privacy.html     # Privacy policy
 ```
 
 ## Permissions
@@ -73,6 +77,11 @@ checklinks/
 - **activeTab** — access to the current tab only when you click the icon
 - **scripting** — inject the content script on demand
 - **host_permissions (`<all_urls>`)** — required so the service worker can make HTTP requests to check links on any domain
+
+## Links
+
+- [Website](https://leemark.github.io/checklinks/)
+- [Privacy policy](https://leemark.github.io/checklinks/privacy.html)
 
 ## License
 
