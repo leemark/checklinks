@@ -122,8 +122,8 @@ async function checkSingleLink(url) {
     });
     clearTimeout(timeoutId);
 
-    // Some servers reject HEAD — retry with GET
-    if (response.status === 405) {
+    // Some servers reject HEAD or block it — retry with GET
+    if (response.status === 405 || response.status === 403) {
       return await checkWithGet(url);
     }
 
