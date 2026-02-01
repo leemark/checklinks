@@ -8,12 +8,14 @@
 /* ── Scroll-to pulse highlight ─────────────────────────────────────── */
 
 @keyframes checklinks-pulse-anim {
-  0%   { background-color: #facc15; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.5); }
-  100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
+  0%   { outline-color: #facc15; outline-offset: 0px; }
+  50%  { outline-color: #facc15; outline-offset: 3px; }
+  100% { outline-color: transparent; outline-offset: 0px; }
 }
 
 .checklinks-pulse {
-  animation: checklinks-pulse-anim 2s ease-out;
+  outline: 3px solid transparent;
+  animation: checklinks-pulse-anim 0.8s ease-in-out 5;
   border-radius: 2px;
 }
 

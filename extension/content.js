@@ -338,8 +338,8 @@
         if (anchor.href === url) {
           anchor.scrollIntoView({ behavior: "smooth", block: "start" });
           anchor.classList.add("checklinks-pulse");
-          // Remove the pulse class after the animation completes
-          setTimeout(() => anchor.classList.remove("checklinks-pulse"), 2000);
+          // Remove the pulse class after the animation completes (0.8s × 5 iterations)
+          setTimeout(() => anchor.classList.remove("checklinks-pulse"), 4000);
           return;
         }
       }
