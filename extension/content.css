@@ -5,6 +5,18 @@
   z-index: 999999;
 }
 
+/* ── Scroll-to pulse highlight ─────────────────────────────────────── */
+
+@keyframes checklinks-pulse-anim {
+  0%   { background-color: #facc15; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.5); }
+  100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
+}
+
+.checklinks-pulse {
+  animation: checklinks-pulse-anim 2s ease-out;
+  border-radius: 2px;
+}
+
 /* ── Floating panel ───────────────────────────────────────────────── */
 
 .checklinks-panel {
@@ -136,6 +148,18 @@
   border-radius: 12px;
   background: #f1f5f9;
   white-space: nowrap;
+  cursor: pointer;
+  transition: outline 0.15s, background 0.15s;
+}
+
+.checklinks-stat:hover {
+  background: #e2e8f0;
+}
+
+.checklinks-stat-active {
+  outline: 2px solid #3b82f6;
+  outline-offset: -1px;
+  background: #dbeafe;
 }
 
 .checklinks-stat span {
@@ -178,7 +202,7 @@
   gap: 8px;
   padding: 7px 16px;
   border-bottom: 1px solid #f1f5f9;
-  cursor: default;
+  cursor: pointer;
   transition: background 0.1s;
   user-select: text;
 }

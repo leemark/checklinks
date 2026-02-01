@@ -16,6 +16,7 @@
     let allResults = [];
     let scanning = false;
     let totalLinks = 0;
+    let activeFilter = null; // null = show all, or a category group name
 
     // ── Build panel DOM ──────────────────────────────────────────────
 
@@ -76,26 +77,43 @@
     summary.className = "checklinks-summary";
     summary.style.display = "none";
 
-    function makeStat(cls, label) {
+    function makeStat(cls, label, filterKey) {
       const div = document.createElement("div");
       div.className = "checklinks-stat checklinks-stat-" + cls;
+      div.style.cursor = "pointer";
       const num = document.createElement("span");
       num.textContent = "0";
       div.appendChild(num);
       div.appendChild(document.createTextNode(" " + label));
-      return { el: div, num };
+      div.addEventListener("click", () => {
+        if (activeFilter === filterKey) {
+          activeFilter = null;
+        } else {
+          activeFilter = filterKey;
+        }
+        updateFilterHighlight();
+        renderResults(allResults);
+      });
+      return { el: div, num, filterKey };
     }
 
-    const statOk = makeStat("ok", "OK");
-    const statRedirect = makeStat("redirect", "Redirect");
-    const statBroken = makeStat("broken", "Broken");
-    const statOther = makeStat("other", "Other");
-    const statTotal = makeStat("total", "Total");
+    const statOk = makeStat("ok", "OK", "ok");
+    const statRedirect = makeStat("redirect", "Redirect", "redirect");
+    const statBroken = makeStat("broken", "Broken", "broken");
+    const statOther = makeStat("other", "Other", "other");
+    const statTotal = makeStat("total", "Total", null);
+    const allStats = [statOk, statRedirect, statBroken, statOther, statTotal];
     summary.appendChild(statOk.el);
     summary.appendChild(statRedirect.el);
     summary.appendChild(statBroken.el);
     summary.appendChild(statOther.el);
     summary.appendChild(statTotal.el);
+
+    function updateFilterHighlight() {
+      for (const s of allStats) {
+        s.el.classList.toggle("checklinks-stat-active", activeFilter !== null && s.filterKey === activeFilter);
+      }
+    }
 
     // Progress bar
     const progressBar = document.createElement("div");
@@ -198,6 +216,8 @@
       clearBtn.disabled = true;
       exportBtn.disabled = true;
       allResults = [];
+      activeFilter = null;
+      updateFilterHighlight();
       resultsList.innerHTML = "";
       clearOverlays();
 
@@ -294,12 +314,50 @@
     function clearAll() {
       clearOverlays();
       allResults = [];
+      activeFilter = null;
+      updateFilterHighlight();
       resultsList.innerHTML = "";
       summary.style.display = "none";
       progressBar.style.display = "none";
       clearBtn.disabled = true;
       exportBtn.disabled = true;
       statusEl.textContent = "Cleared. Click Scan to re-check.";
+    }
+
+    // ── Scroll-to-link + highlight ──────────────────────────────────
+
+    function scrollToLink(url) {
+      // Remove any previous pulse
+      document.querySelectorAll(".checklinks-pulse").forEach((el) => {
+        el.classList.remove("checklinks-pulse");
+      });
+
+      // Find the first matching anchor on the page
+      const anchors = document.querySelectorAll("a[href]");
+      for (const anchor of anchors) {
+        if (anchor.href === url) {
+          anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+          anchor.classList.add("checklinks-pulse");
+          // Remove the pulse class after the animation completes
+          setTimeout(() => anchor.classList.remove("checklinks-pulse"), 2000);
+          return;
+        }
+      }
+    }
+
+    // ── Filter helpers ───────────────────────────────────────────────
+
+    const filterCategories = {
+      ok: ["ok"],
+      redirect: ["redirect"],
+      broken: ["client_error", "server_error"],
+      other: ["error", "timeout", "skipped"]
+    };
+
+    function matchesFilter(r) {
+      if (!activeFilter) return true;
+      const cats = filterCategories[activeFilter];
+      return cats && cats.includes(r.category);
     }
 
     // ── Panel rendering ──────────────────────────────────────────────
@@ -310,7 +368,9 @@
         timeout: 3, redirect: 4, ok: 5, skipped: 6
       };
 
-      const sorted = [...results].sort(
+      const filtered = results.filter(matchesFilter);
+
+      const sorted = [...filtered].sort(
         (a, b) => (order[a.category] ?? 7) - (order[b.category] ?? 7)
       );
 
@@ -318,11 +378,16 @@
 
       for (const r of sorted) {
         const li = document.createElement("li");
+        li.style.cursor = "pointer";
 
         let tooltip = r.url;
         if (r.redirectedTo) tooltip += "\n\u2192 " + r.redirectedTo;
         if (r.errorDetail) tooltip += "\n\u26A0 " + r.errorDetail;
+        tooltip += "\nClick to scroll to this link on the page";
         li.title = tooltip;
+
+        // Click to scroll to the link on the page
+        li.addEventListener("click", () => scrollToLink(r.url));
 
         const dot = document.createElement("span");
         dot.className = "checklinks-dot checklinks-dot-" + r.category;
