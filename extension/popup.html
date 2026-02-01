@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <h1>CheckLinks</h1>
+    <p id="status">Click "Scan" to check links on this page.</p>
+  </div>
+
+  <div class="controls">
+    <button id="scanBtn">Scan Page</button>
+    <button id="clearBtn" disabled>Clear</button>
+    <button id="exportBtn" disabled>Export CSV</button>
+  </div>
+
+  <div class="summary" id="summary" style="display:none;">
+    <div class="stat stat-ok"><span id="countOk">0</span> OK</div>
+    <div class="stat stat-redirect"><span id="countRedirect">0</span> Redirect</div>
+    <div class="stat stat-broken"><span id="countBroken">0</span> Broken</div>
+    <div class="stat stat-other"><span id="countOther">0</span> Other</div>
+    <div class="stat stat-total"><span id="countTotal">0</span> Total</div>
+  </div>
+
+  <div class="progress-bar" id="progressBar" style="display:none;">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <ul id="resultsList" class="results-list"></ul>
+
+  <script src="popup.js"></script>
+</body>
+</html>

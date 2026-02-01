@@ -1,0 +1,36 @@
+.checklinks-badge {
+  pointer-events: none;
+  z-index: 999999;
+}
+
+.checklinks-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 8px 16px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  z-index: 2147483647;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.checklinks-banner button {
+  background: #475569;
+  color: #f1f5f9;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.checklinks-banner button:hover {
+  background: #64748b;
+}
