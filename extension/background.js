@@ -1,6 +1,22 @@
 // Per-tab scan state. Keyed by tabId.
 const tabState = {};
 
+// Clicking the extension icon injects the content script into the active tab
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      files: ["content.css"]
+    });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content.js"]
+    });
+  } catch (_) {
+    // Cannot inject into this page (e.g. chrome:// URLs)
+  }
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "CHECK_LINKS") {
     const tabId = sender.tab?.id ?? message.tabId;

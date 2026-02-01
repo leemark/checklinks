@@ -1,6 +1,6 @@
 # CheckLinks
 
-A Chrome extension that checks all hyperlinks on a web page for broken links. Click the extension icon to scan the current page — broken links are highlighted directly on the page and listed in a popup summary.
+A Chrome extension that checks all hyperlinks on a web page for broken links. Click the extension icon to scan the current page — broken links are highlighted directly on the page and results are shown in a floating, draggable panel.
 
 ## Features
 
@@ -9,9 +9,10 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
   - Amber: redirect (3xx)
   - Red: broken (4xx/5xx)
   - Gray: timeout or network error
-- **Popup summary** — sorted results list with broken links first, summary counts, and a progress bar
+- **Floating results panel** — draggable, closeable panel with sorted results list, summary counts, and progress bar. Stays open until you close it and can be moved out of the way.
+- **Detailed error reporting** — network errors are classified (DNS failure, connection refused, SSL error, timeout, etc.) with explanations shown in the results
 - **CSV export** — download scan results as a CSV file
-- **Fast** — checks up to 6 links concurrently using HEAD requests with GET fallback
+- **Throttled requests** — checks 3 links concurrently with delays between requests using HEAD (with GET fallback) to avoid overwhelming servers
 - **Lightweight** — plain JavaScript, no build step, no dependencies
 
 ## Installation
@@ -28,20 +29,20 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
 ## Usage
 
 1. Navigate to any web page
-2. Click the CheckLinks icon in the toolbar
-3. Click **Scan Page** in the popup
-4. Links on the page will be highlighted with colored outlines and status badges
-5. The popup shows a summary with counts and a scrollable list of results
+2. Click the CheckLinks icon in the toolbar — a floating panel appears and scanning starts automatically
+3. Links on the page will be highlighted with colored outlines and status badges as results come in
+4. The panel shows a summary with counts and a scrollable, sorted list of results
+5. Drag the panel by its header to move it out of the way
 6. Click **Export CSV** to download the results
 7. Click **Clear** to remove all overlays from the page
+8. Click **X** to close the panel (click the icon again to reopen it)
 
 ## How It Works
 
 The extension uses Chrome's Manifest V3 architecture:
 
-- **Content script** (`content.js`) is injected on demand into the active tab. It scrapes all `<a>` elements and applies colored overlays as results arrive.
-- **Service worker** (`background.js`) receives the list of URLs and checks each one via `fetch` HEAD requests (with GET fallback for servers that reject HEAD). Requests run with a concurrency limit of 6 and a 10-second timeout.
-- **Popup** (`popup.html/js/css`) triggers the scan, polls for results, and renders the summary.
+- **Content script** (`content.js`) is injected on demand into the active tab when you click the icon. It scrapes all `<a>` elements, builds the floating results panel, and applies colored overlays as results arrive.
+- **Service worker** (`background.js`) receives the list of URLs and checks each one via `fetch` HEAD requests (with GET fallback for servers that reject HEAD or return 403). Requests run with a concurrency limit of 3, a 250ms delay between requests, and a 10-second timeout per request.
 
 ### Link Status Categories
 
@@ -62,11 +63,8 @@ checklinks/
   extension/
     manifest.json    # Chrome extension manifest (Manifest V3)
     background.js    # Service worker — link checking engine
-    content.js       # Content script — link scraping and overlays
-    content.css      # Overlay and banner styles
-    popup.html       # Popup markup
-    popup.js         # Popup logic
-    popup.css        # Popup styles
+    content.js       # Content script — link scraping, results panel, and overlays
+    content.css      # Panel and overlay styles
     icons/           # Extension icons (16/32/48/128px)
 ```
 
