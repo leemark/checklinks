@@ -46,8 +46,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-async function checkLinksWithConcurrency(tabId, urls, concurrency = 6) {
+async function checkLinksWithConcurrency(tabId, urls, concurrency = 3) {
   let index = 0;
+
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   async function worker() {
     while (index < urls.length) {
@@ -70,6 +74,9 @@ async function checkLinksWithConcurrency(tabId, urls, concurrency = 6) {
       } catch (_) {
         // Tab may have been closed
       }
+
+      // Pause between requests to avoid overwhelming servers
+      await delay(250);
     }
   }
 
@@ -124,9 +131,10 @@ async function checkSingleLink(url) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === "AbortError") {
-      return { url, status: 0, statusText: "Timeout", category: "timeout" };
+      return { url, status: 0, statusText: "Timeout", errorDetail: "Request timed out after 10 seconds", category: "timeout" };
     }
-    return { url, status: 0, statusText: err.message, category: "error" };
+    const { reason, detail } = classifyNetworkError(err);
+    return { url, status: 0, statusText: reason, errorDetail: detail, category: "error" };
   }
 }
 
@@ -153,10 +161,45 @@ async function checkWithGet(url) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === "AbortError") {
-      return { url, status: 0, statusText: "Timeout", category: "timeout" };
+      return { url, status: 0, statusText: "Timeout", errorDetail: "Request timed out after 10 seconds", category: "timeout" };
     }
-    return { url, status: 0, statusText: err.message, category: "error" };
+    const { reason, detail } = classifyNetworkError(err);
+    return { url, status: 0, statusText: reason, errorDetail: detail, category: "error" };
   }
+}
+
+function classifyNetworkError(err) {
+  const msg = err.message || "";
+
+  if (msg.includes("ERR_NAME_NOT_RESOLVED") || msg.includes("getaddrinfo")) {
+    return { reason: "DNS failed", detail: "Domain name could not be resolved" };
+  }
+  if (msg.includes("ERR_CONNECTION_REFUSED")) {
+    return { reason: "Refused", detail: "Connection refused by server" };
+  }
+  if (msg.includes("ERR_CONNECTION_RESET") || msg.includes("ECONNRESET")) {
+    return { reason: "Reset", detail: "Connection was reset by server" };
+  }
+  if (msg.includes("ERR_CONNECTION_TIMED_OUT") || msg.includes("ETIMEDOUT")) {
+    return { reason: "Conn timeout", detail: "Connection timed out" };
+  }
+  if (msg.includes("ERR_SSL") || msg.includes("ERR_CERT") || msg.includes("SSL")) {
+    return { reason: "SSL error", detail: "SSL/TLS certificate error: " + msg };
+  }
+  if (msg.includes("ERR_TOO_MANY_REDIRECTS")) {
+    return { reason: "Redirect loop", detail: "Too many redirects" };
+  }
+  if (msg.includes("ERR_BLOCKED") || msg.includes("ERR_ABORTED")) {
+    return { reason: "Blocked", detail: "Request was blocked (possibly by CORS or browser policy)" };
+  }
+  if (msg.includes("ERR_INSUFFICIENT_RESOURCES") || msg.includes("ERR_NETWORK")) {
+    return { reason: "Network error", detail: "Network error — too many simultaneous connections or network is down" };
+  }
+  if (msg.includes("Failed to fetch")) {
+    return { reason: "Network error", detail: "Could not connect — network error or CORS restriction" };
+  }
+
+  return { reason: "Error", detail: msg || "Unknown error" };
 }
 
 function categorize(status) {

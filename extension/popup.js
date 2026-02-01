@@ -115,21 +115,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (const r of sorted) {
       const li = document.createElement("li");
-      li.title = r.url + (r.redirectedTo ? "\n→ " + r.redirectedTo : "");
+
+      // Build tooltip with all available detail
+      let tooltip = r.url;
+      if (r.redirectedTo) tooltip += "\n→ " + r.redirectedTo;
+      if (r.errorDetail) tooltip += "\n⚠ " + r.errorDetail;
+      li.title = tooltip;
 
       const dot = document.createElement("span");
       dot.className = "dot dot-" + r.category;
 
+      const textCol = document.createElement("span");
+      textCol.className = "result-text-col";
+
       const url = document.createElement("span");
       url.className = "result-url";
       url.textContent = r.url;
+      textCol.appendChild(url);
+
+      // Show error detail as a second line for errors/timeouts
+      if (r.errorDetail) {
+        const detail = document.createElement("span");
+        detail.className = "result-detail";
+        detail.textContent = r.errorDetail;
+        textCol.appendChild(detail);
+      }
 
       const status = document.createElement("span");
       status.className = "result-status";
       status.textContent = formatStatus(r);
 
       li.appendChild(dot);
-      li.appendChild(url);
+      li.appendChild(textCol);
       li.appendChild(status);
       resultsList.appendChild(li);
     }

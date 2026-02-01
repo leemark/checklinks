@@ -66,7 +66,7 @@
       client_error: { border: "#ef4444", label: String(result.status || "4xx") },
       server_error: { border: "#ef4444", label: String(result.status || "5xx") },
       timeout:      { border: "#6b7280", label: "Timeout" },
-      error:        { border: "#6b7280", label: "Error" },
+      error:        { border: "#6b7280", label: result.statusText || "Error" },
       skipped:      { border: "#d1d5db", label: "Skip" }
     };
 
