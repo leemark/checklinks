@@ -1,6 +1,11 @@
 // Per-tab scan state. Keyed by tabId.
 const tabState = {};
 
+// Clean up state when a tab is closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  delete tabState[tabId];
+});
+
 // Clicking the extension icon injects the content script into the active tab
 chrome.action.onClicked.addListener(async (tab) => {
   try {
@@ -19,7 +24,8 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "CHECK_LINKS") {
-    const tabId = sender.tab?.id ?? message.tabId;
+    const tabId = sender.tab?.id;
+    if (!tabId) return false;
 
     // De-duplicate URLs
     const uniqueUrls = [...new Set(message.payload.links)];
@@ -33,31 +39,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     checkLinksWithConcurrency(tabId, uniqueUrls);
     sendResponse({ status: "started", total: uniqueUrls.length });
-    return false;
-  }
-
-  if (message.type === "GET_RESULTS") {
-    const tabId = message.tabId;
-    const state = tabState[tabId];
-    if (!state) {
-      sendResponse({ results: [], scanning: false, total: 0 });
-    } else {
-      sendResponse({
-        results: Array.from(state.results.values()),
-        scanning: state.scanning,
-        total: state.total
-      });
-    }
-    return false;
-  }
-
-  if (message.type === "CANCEL_SCAN") {
-    const tabId = message.tabId;
-    if (tabState[tabId]) {
-      tabState[tabId].cancelled = true;
-      tabState[tabId].scanning = false;
-    }
-    sendResponse({ status: "cancelled" });
     return false;
   }
 });
@@ -139,7 +120,7 @@ async function checkSingleLink(url) {
     clearTimeout(timeoutId);
 
     // Some servers reject HEAD or block it — retry with GET
-    if (response.status === 405 || response.status === 403) {
+    if (response.status === 405 || response.status === 403 || response.status === 999) {
       return await checkWithGet(url);
     }
 
@@ -199,6 +180,18 @@ async function checkWithGet(url) {
         statusText: response.statusText,
         category: "redirect",
         redirectedTo: finalUrl
+      };
+    }
+
+    // Sites like LinkedIn return 999 to block automated requests —
+    // report it clearly so the user understands it's not truly broken
+    if (response.status === 999) {
+      return {
+        url,
+        status: 999,
+        statusText: "Blocked",
+        errorDetail: "This site blocks automated link checking (status 999)",
+        category: "error"
       };
     }
 

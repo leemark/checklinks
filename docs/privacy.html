@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - CheckLinks</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e0e0e0;
+      background: #181a20;
+      line-height: 1.6;
+    }
+
+    a { color: #6eb5ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header {
+      background: #23262f;
+      border-bottom: 1px solid #31343d;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2.4rem; color: #fff; margin-bottom: 0.5rem; }
+    header p { font-size: 1.15rem; color: #a0a4b0; max-width: 540px; margin: 0 auto; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem; }
+
+    section { margin-bottom: 2rem; }
+    section h2 {
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    section p, section li {
+      margin-bottom: 0.5rem;
+    }
+    ul { padding-left: 1.4rem; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #666;
+      font-size: 0.85rem;
+      border-top: 1px solid #31343d;
+    }
+    footer a { color: #6eb5ff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CheckLinks</h1>
+  <p>Privacy Policy</p>
+</header>
+
+<div class="container">
+
+  <section>
+    <p><strong>Effective date:</strong> February 1, 2026</p>
+  </section>
+
+  <section>
+    <h2>Overview</h2>
+    <p>CheckLinks is a Chrome extension that checks hyperlinks on web pages for broken links. This policy explains what data the extension accesses, how it is used, and what permissions are required.</p>
+  </section>
+
+  <section>
+    <h2>Data Collection</h2>
+    <p>CheckLinks does <strong>not</strong> collect, store, or transmit any personal data. Specifically:</p>
+    <ul>
+      <li>No analytics or tracking of any kind</li>
+      <li>No cookies or identifiers</li>
+      <li>No user accounts or sign-ins</li>
+      <li>No data is sent to any server operated by the developer or any third party</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How the Extension Works</h2>
+    <p>When you click the CheckLinks icon on a page, the extension:</p>
+    <ul>
+      <li>Reads the URLs of all <code>&lt;a&gt;</code> elements on the current page</li>
+      <li>Makes HTTP HEAD requests (with GET fallback) to each URL to check whether the link is reachable</li>
+      <li>Displays the results directly on the page and in a floating panel</li>
+    </ul>
+    <p>All HTTP requests go directly from your browser to the linked URLs &mdash; the same servers your browser would contact if you clicked each link yourself. No requests are sent to any intermediary or third-party service.</p>
+  </section>
+
+  <section>
+    <h2>Data Storage</h2>
+    <p>CheckLinks does not persist any data. Scan results are held in memory only for the duration of the scan and are discarded when you close the tab, navigate away, or close the results panel. Nothing is written to local storage, cookies, or any external database.</p>
+  </section>
+
+  <section>
+    <h2>Permissions Explained</h2>
+    <ul>
+      <li><strong><code>&lt;all_urls&gt;</code></strong> (host permission) &mdash; Required so the extension's service worker can make HTTP requests to check links on any domain. Without this permission, the extension could only check links pointing to a pre-defined list of domains, which would make it unusable as a general-purpose link checker.</li>
+      <li><strong><code>activeTab</code></strong> &mdash; Grants access to the currently active tab only when you click the extension icon. This ensures the extension cannot access any tab you haven't explicitly activated it on.</li>
+      <li><strong><code>scripting</code></strong> &mdash; Allows the extension to inject its content script on demand into the active tab. The content script reads the links on the page, builds the results panel, and applies status overlays.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Third-Party Services</h2>
+    <p>CheckLinks does not integrate with, transmit data to, or receive data from any third-party service, API, or analytics provider.</p>
+  </section>
+
+  <section>
+    <h2>Changes to This Policy</h2>
+    <p>If this policy is updated, the new version will be published at this URL and the effective date above will be revised.</p>
+  </section>
+
+  <section>
+    <h2>Contact</h2>
+    <p>If you have questions or concerns about this privacy policy, please open an issue on the <a href="https://github.com/leemark/checklinks/issues">GitHub repository</a>.</p>
+  </section>
+
+  <p style="margin-top:1.5rem;"><a href="index.html">&larr; Back to CheckLinks</a></p>
+
+</div>
+
+<footer>
+  &copy; 2026 CheckLinks &middot; <a href="https://github.com/leemark/checklinks">GitHub</a> &middot; <a href="index.html">Home</a>
+</footer>
+
+</body>
+</html>

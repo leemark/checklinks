@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CheckLinks - Broken Link Checker for Chrome</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e0e0e0;
+      background: #181a20;
+      line-height: 1.6;
+    }
+
+    a { color: #6eb5ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    header {
+      background: #23262f;
+      border-bottom: 1px solid #31343d;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2.4rem; color: #fff; margin-bottom: 0.5rem; }
+    header p { font-size: 1.15rem; color: #a0a4b0; max-width: 540px; margin: 0 auto; }
+
+    /* Main container */
+    .container { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem; }
+
+    section { margin-bottom: 2.5rem; }
+    section h2 {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #31343d;
+    }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 520px) {
+      .features { grid-template-columns: 1fr; }
+    }
+    .feature {
+      background: #23262f;
+      border: 1px solid #31343d;
+      border-radius: 8px;
+      padding: 1.1rem 1.25rem;
+    }
+    .feature h3 { font-size: 1rem; color: #fff; margin-bottom: 0.35rem; }
+    .feature p { font-size: 0.92rem; color: #a0a4b0; }
+
+    /* Steps list */
+    ol.steps { padding-left: 1.4rem; }
+    ol.steps li { margin-bottom: 0.6rem; }
+    ol.steps code {
+      background: #23262f;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* Status table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #31343d;
+    }
+    th { color: #fff; background: #23262f; }
+
+    .badge {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 0.3rem;
+    }
+    .badge-green  { background: #4caf50; }
+    .badge-amber  { background: #ff9800; }
+    .badge-red    { background: #f44336; }
+    .badge-gray   { background: #888; }
+
+    /* CTA button */
+    .cta {
+      display: inline-block;
+      background: #3578e5;
+      color: #fff;
+      padding: 0.65rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+    }
+    .cta:hover { background: #2662c9; text-decoration: none; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #666;
+      font-size: 0.85rem;
+      border-top: 1px solid #31343d;
+    }
+    footer a { color: #6eb5ff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CheckLinks</h1>
+  <p>A lightweight Chrome extension that checks every link on a page and highlights broken ones directly in place.</p>
+</header>
+
+<div class="container">
+
+  <!-- Features -->
+  <section>
+    <h2>Features</h2>
+    <div class="features">
+      <div class="feature">
+        <h3>Inline Overlays</h3>
+        <p>Links are outlined and badged with their status right on the page &mdash; green for OK, amber for redirects, red for broken, gray for errors.</p>
+      </div>
+      <div class="feature">
+        <h3>Draggable Results Panel</h3>
+        <p>A floating panel shows a sorted results list, summary counts, and a progress bar. Drag it anywhere and close it when you're done.</p>
+      </div>
+      <div class="feature">
+        <h3>Filter &amp; Scroll-to</h3>
+        <p>Filter results by status category and click any result to scroll directly to the link on the page.</p>
+      </div>
+      <div class="feature">
+        <h3>CSV Export</h3>
+        <p>Download the full scan results as a CSV file for reporting or further analysis.</p>
+      </div>
+      <div class="feature">
+        <h3>Detailed Error Reporting</h3>
+        <p>Network errors are classified (DNS failure, connection refused, SSL error, timeout, etc.) with clear explanations.</p>
+      </div>
+      <div class="feature">
+        <h3>Lightweight &amp; Dependency-Free</h3>
+        <p>Plain JavaScript, no build step, no external dependencies. Uses Manifest V3 with HEAD requests and GET fallback.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section>
+    <h2>Installation</h2>
+    <h3 style="color:#fff;margin-bottom:0.5rem;">From source (developer mode)</h3>
+    <ol class="steps">
+      <li>Clone the repository: <code>git clone https://github.com/leemark/checklinks.git</code></li>
+      <li>Open Chrome and go to <code>chrome://extensions</code></li>
+      <li>Enable <strong>Developer mode</strong> (toggle in the top-right)</li>
+      <li>Click <strong>Load unpacked</strong></li>
+      <li>Select the <code>extension</code> folder from the cloned repository</li>
+    </ol>
+  </section>
+
+  <!-- Usage -->
+  <section>
+    <h2>How to Use</h2>
+    <ol class="steps">
+      <li>Navigate to any web page you want to check</li>
+      <li>Click the <strong>CheckLinks</strong> icon in the toolbar &mdash; a floating panel appears and scanning starts automatically</li>
+      <li>Links on the page are highlighted with colored outlines and status badges as results come in</li>
+      <li>Use the filter buttons to narrow results by status (OK, redirects, errors, etc.)</li>
+      <li>Click any result in the panel to scroll to and highlight the link on the page</li>
+      <li>Drag the panel by its header to reposition it</li>
+      <li>Click <strong>Export CSV</strong> to download the results</li>
+      <li>Click <strong>Clear</strong> to remove all overlays, or <strong>X</strong> to close the panel</li>
+    </ol>
+  </section>
+
+  <!-- Status reference -->
+  <section>
+    <h2>Link Status Reference</h2>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>HTTP Status</th><th>Color</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge badge-green"></span> OK</td><td>200&ndash;299</td><td>Green</td></tr>
+        <tr><td><span class="badge badge-amber"></span> Redirect</td><td>301, 302, 307, 308</td><td>Amber</td></tr>
+        <tr><td><span class="badge badge-red"></span> Client Error</td><td>400&ndash;499</td><td>Red</td></tr>
+        <tr><td><span class="badge badge-red"></span> Server Error</td><td>500&ndash;599</td><td>Red</td></tr>
+        <tr><td><span class="badge badge-gray"></span> Timeout / Error</td><td>&mdash;</td><td>Gray</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Links -->
+  <section>
+    <h2>Links</h2>
+    <p>
+      <a href="https://github.com/leemark/checklinks">Source code &amp; issues on GitHub</a><br>
+      <a href="privacy.html">Privacy policy</a>
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  &copy; 2026 CheckLinks &middot; <a href="https://github.com/leemark/checklinks">GitHub</a> &middot; <a href="privacy.html">Privacy</a>
+</footer>
+
+</body>
+</html>
