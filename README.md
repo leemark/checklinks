@@ -18,6 +18,14 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
 
 ## Installation
 
+### From Chrome Web Store (recommended)
+
+Install directly from the Chrome Web Store:
+
+https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp
+
+### From source (developer mode)
+
 1. Clone this repository:
    ```
    git clone https://github.com/leemark/checklinks.git
@@ -80,6 +88,7 @@ checklinks/
 
 ## Links
 
+- [Chrome Web Store](https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp)
 - [Website](https://leemark.github.io/checklinks/)
 - [Privacy policy](https://leemark.github.io/checklinks/privacy.html)
 
