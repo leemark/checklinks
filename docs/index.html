@@ -113,6 +113,23 @@
       transition: background 0.15s;
     }
     .cta:hover { background: #2662c9; text-decoration: none; }
+    .cta-primary {
+      background: linear-gradient(135deg, #2db84d, #1f9d44);
+      border: 1px solid #34c75a;
+      box-shadow: 0 8px 20px rgba(18, 145, 58, 0.3);
+      font-size: 1rem;
+      padding: 0.8rem 1.8rem;
+    }
+    .cta-primary:hover {
+      background: linear-gradient(135deg, #33c956, #249f49);
+    }
+    .cta-secondary {
+      background: #3d7ff0;
+      border: 1px solid #4f8df6;
+    }
+    .cta-secondary:hover {
+      background: #2b6fdf;
+    }
 
     /* Footer */
     footer {
@@ -131,7 +148,7 @@
   <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABnElEQVR4nOWaO3LDMAwFnzQuXPhYuo3P49vwWCnSJU2YMDJAAiBgcJLXSiJ3CX4sjzY45jiOD8l9pZTNq8/phqTQXGZlTA/PQnOxyOzaB6LgrW2LjSPBqUirIarAq+E1fQ4FMuA1fXcFMuGlDKzACvA1PRZSYCX4Go7pSWBF+BqKTX0OrJZfAiuM/vV+w/V+Y6+fGXfuQkZacKnEMlOIAu5J1CwjYM0O5E8fbqTfH2/sM5U5vQIW+DYXTxhtKHgpeM2WOX3OAlp4IHEKecADBoHRQSNtwysqAelBI22jxjr6gELAetCM7p+BBxzWgFQiAh5QCPQ6G0lEwQPKClgkIuEBw0HWdm5ZyJ7wwOQaOMOchbz2+l52zz9agR9oz72eSillm96FqFGNnvdtXH5KjOCi4IEvAY9pFAlJpTKnvw/MxlWAqkJ0Zb4FvHajFjgKvmV9gs5+Px7lPNB/bw14H2yeodjICqwowTGxU2gliR5Ldw2sIDFiGC7iTAlJ36JdKENC2qcaLPqc0A6W+hyIrIal7f/5sQeXjM9tPgFQWcCgrp2ZtgAAAABJRU5ErkJggg==" alt="CheckLinks icon"> CheckLinks</h1>
   <p>A lightweight Chrome extension that checks every link on a page and highlights broken ones directly in place.</p>
   <p class="hero-actions">
-    <a class="cta" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install on Chrome</a>
+    <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install on Chrome</a>
   </p>
 </header>
 
@@ -173,7 +190,7 @@
     <h2>Installation</h2>
     <h3 style="color:#fff;margin-bottom:0.5rem;">From Chrome Web Store (recommended)</h3>
     <p>
-      <a class="cta" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks</a>
+      <a class="cta cta-secondary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks</a>
     </p>
     <h3 style="color:#fff;margin:1.2rem 0 0.5rem;">From source (developer mode)</h3>
     <ol class="steps">
