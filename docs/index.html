@@ -3,7 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CheckLinks - Broken Link Checker for Chrome</title>
+  <title>CheckLinks - Free Broken Link Checker Chrome Extension</title>
+  <meta name="description" content="CheckLinks is a free Chrome extension that scans every hyperlink on a page, highlights broken links in place, reports redirects and errors, and exports results to CSV.">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="Mark Lee">
+  <meta name="theme-color" content="#181a20">
+  <link rel="canonical" href="https://leemark.github.io/checklinks/">
+  <link rel="icon" href="icon128.png" sizes="128x128" type="image/png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CheckLinks">
+  <meta property="og:title" content="CheckLinks - Free Broken Link Checker Chrome Extension">
+  <meta property="og:description" content="Scan all hyperlinks on a page, highlight broken links in place, classify redirects and network errors, and export a CSV report.">
+  <meta property="og:url" content="https://leemark.github.io/checklinks/">
+  <meta property="og:image" content="https://leemark.github.io/checklinks/icon128.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="CheckLinks - Free Broken Link Checker Chrome Extension">
+  <meta name="twitter:description" content="A lightweight Chrome extension for checking broken links directly on the page.">
+  <meta name="twitter:image" content="https://leemark.github.io/checklinks/icon128.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://leemark.github.io/checklinks/#website",
+        "name": "CheckLinks",
+        "url": "https://leemark.github.io/checklinks/",
+        "description": "A free Chrome extension for checking broken links on web pages."
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://leemark.github.io/checklinks/#software",
+        "name": "CheckLinks",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Chrome",
+        "softwareVersion": "1.0.0",
+        "description": "CheckLinks scans hyperlinks on the current web page, highlights broken links in place, classifies redirects and network errors, and exports results to CSV.",
+        "url": "https://leemark.github.io/checklinks/",
+        "installUrl": "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp",
+        "codeRepository": "https://github.com/leemark/checklinks",
+        "privacyPolicy": "https://leemark.github.io/checklinks/privacy.html",
+        "image": "https://leemark.github.io/checklinks/icon128.png",
+        "author": {
+          "@type": "Person",
+          "name": "Mark Lee"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://leemark.github.io/checklinks/#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "CheckLinks",
+            "item": "https://leemark.github.io/checklinks/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -63,6 +128,20 @@
     }
     .feature h3 { font-size: 1rem; color: #fff; margin-bottom: 0.35rem; }
     .feature p { font-size: 0.92rem; color: #a0a4b0; }
+
+    .answers {
+      background: #23262f;
+      border: 1px solid #31343d;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+    .answers h3 {
+      color: #fff;
+      font-size: 1rem;
+      margin: 1rem 0 0.35rem;
+    }
+    .answers h3:first-child { margin-top: 0; }
+    .answers p { color: #a0a4b0; font-size: 0.94rem; }
 
     /* Steps list */
     ol.steps { padding-left: 1.4rem; }
@@ -182,6 +261,24 @@
         <h3>Lightweight &amp; Dependency-Free</h3>
         <p>Plain JavaScript, no build step, no external dependencies. Uses Manifest V3 with HEAD requests and GET fallback.</p>
       </div>
+    </div>
+  </section>
+
+  <!-- Direct answers -->
+  <section>
+    <h2>Broken Link Checker for Chrome</h2>
+    <div class="answers">
+      <h3>What is CheckLinks?</h3>
+      <p>CheckLinks is a free Chrome extension that checks the hyperlinks on the page you are viewing and marks each link with its result.</p>
+
+      <h3>How does CheckLinks find broken links?</h3>
+      <p>When you start a scan, CheckLinks reads the page's links, sends direct HTTP requests from your browser, and reports working links, redirects, client errors, server errors, timeouts, and network failures.</p>
+
+      <h3>Who is CheckLinks for?</h3>
+      <p>CheckLinks is useful for website owners, editors, developers, QA testers, and support teams who need a fast way to audit links on a single page.</p>
+
+      <h3>Does CheckLinks collect data?</h3>
+      <p>No. CheckLinks has no analytics, no accounts, and no external service. Link checks are made directly from your browser to the URLs found on the current page.</p>
     </div>
   </section>
 
