@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CheckLinks - Free Broken Link Checker Chrome Extension</title>
-  <meta name="description" content="CheckLinks is a free Chrome extension that scans every hyperlink on a page, highlights broken links in place, reports redirects and errors, and exports results to CSV.">
+  <meta name="description" content="Free Chrome extension to find broken links on a page. CheckLinks highlights 404s, redirects, timeouts, and network errors and exports results to CSV.">
   <meta name="robots" content="index,follow">
   <meta name="author" content="Mark Lee">
   <meta name="theme-color" content="#181a20">
@@ -13,12 +13,12 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CheckLinks">
   <meta property="og:title" content="CheckLinks - Free Broken Link Checker Chrome Extension">
-  <meta property="og:description" content="Scan all hyperlinks on a page, highlight broken links in place, classify redirects and network errors, and export a CSV report.">
+  <meta property="og:description" content="Find broken links, 404s, redirects, timeouts, and network errors on the current page with a free, privacy-friendly Chrome extension.">
   <meta property="og:url" content="https://leemark.github.io/checklinks/">
   <meta property="og:image" content="https://leemark.github.io/checklinks/icon128.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="CheckLinks - Free Broken Link Checker Chrome Extension">
-  <meta name="twitter:description" content="A lightweight Chrome extension for checking broken links directly on the page.">
+  <meta name="twitter:description" content="A free Chrome extension that finds broken links, redirects, timeouts, and errors directly on the current page.">
   <meta name="twitter:image" content="https://leemark.github.io/checklinks/icon128.png">
   <meta name="google-site-verification" content="oCJIpd1RSoTFLQtVhi4D9CkTwHrhW7uizMj7iypuxA4" />
   <script type="application/ld+json">
@@ -39,7 +39,7 @@
         "applicationCategory": "BrowserApplication",
         "operatingSystem": "Chrome",
         "softwareVersion": "1.0.0",
-        "description": "CheckLinks scans hyperlinks on the current web page, highlights broken links in place, classifies redirects and network errors, and exports results to CSV.",
+        "description": "CheckLinks is a free Chrome extension that checks links on the current page, highlights broken links, redirects, timeouts, and network errors, and exports results to CSV.",
         "url": "https://leemark.github.io/checklinks/",
         "installUrl": "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp",
         "codeRepository": "https://github.com/leemark/checklinks",
@@ -82,22 +82,69 @@
 
     a { color: #6eb5ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    a:focus-visible {
+      outline: 3px solid #8fc6ff;
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
 
     /* Header */
     header {
-      background: #23262f;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(45, 184, 77, 0.13), transparent 30rem),
+        radial-gradient(circle at 85% 90%, rgba(61, 127, 240, 0.12), transparent 28rem),
+        #20232b;
       border-bottom: 1px solid #31343d;
-      padding: 2rem 1rem;
+      padding: 3.5rem 1rem 3rem;
       text-align: center;
     }
-    header h1 { font-size: 2.4rem; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    header h1 img { width: 1.2em; height: 1.2em; vertical-align: middle; }
-    header p { font-size: 1.15rem; color: #a0a4b0; max-width: 540px; margin: 0 auto; }
+    .hero { max-width: 980px; margin: 0 auto; }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #c8cbd3;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .brand img { width: 1.6rem; height: 1.6rem; }
+    header h1 {
+      max-width: 760px;
+      margin: 0 auto 1rem;
+      color: #fff;
+      font-size: clamp(2.25rem, 6vw, 4.2rem);
+      line-height: 1.05;
+      letter-spacing: -0.045em;
+    }
+    header .hero-copy { font-size: 1.12rem; color: #b5b9c4; max-width: 670px; margin: 0 auto; }
     .hero-actions {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
     }
     .hero-actions .cta {
       margin-top: 0;
+    }
+    .trust-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.55rem 1.1rem;
+      max-width: 720px;
+      margin: 1.25rem auto 0;
+      padding: 0;
+      list-style: none;
+      color: #aeb3bd;
+      font-size: 0.85rem;
+    }
+    .trust-list li::before {
+      content: "\2713";
+      color: #55d475;
+      font-weight: 800;
+      margin-right: 0.35rem;
     }
 
     /* Main container */
@@ -105,12 +152,102 @@
 
     section { margin-bottom: 2.5rem; }
     section h2 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       color: #fff;
       margin-bottom: 1rem;
       padding-bottom: 0.4rem;
       border-bottom: 1px solid #31343d;
     }
+    section > p { color: #b5b9c4; }
+
+    /* Product preview */
+    .product-preview {
+      max-width: 860px;
+      margin: 2.5rem auto 0;
+      padding: 0 1rem;
+      text-align: left;
+    }
+    .browser-frame {
+      overflow: hidden;
+      background: #111318;
+      border: 1px solid #3a3e49;
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+    }
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.7rem 0.9rem;
+      background: #2a2d36;
+      border-bottom: 1px solid #3a3e49;
+    }
+    .browser-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; background: #555a66; }
+    .browser-address {
+      flex: 1;
+      margin-left: 0.5rem;
+      padding: 0.3rem 0.75rem;
+      color: #8e94a1;
+      background: #1c1f26;
+      border-radius: 4px;
+      font: 0.72rem ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .preview-body {
+      position: relative;
+      min-height: 280px;
+      padding: 2rem;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        #17191f;
+      background-size: 24px 24px;
+    }
+    .preview-page { max-width: 52%; }
+    .preview-line { height: 0.55rem; margin-bottom: 0.75rem; background: #3a3e48; border-radius: 1rem; }
+    .preview-line.short { width: 62%; }
+    .preview-link {
+      display: inline-block;
+      margin: 0.45rem 0;
+      padding: 0.2rem 0.45rem;
+      border: 2px solid #f05b5b;
+      border-radius: 4px;
+      color: #d5d8df;
+      font-size: 0.76rem;
+    }
+    .preview-link.ok { border-color: #4fc86b; }
+    .preview-link.redirect { border-color: #f0a33a; }
+    .results-panel {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: min(300px, 43%);
+      background: #252831;
+      border: 1px solid #454a57;
+      border-radius: 8px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+    .results-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0.9rem;
+      color: #fff;
+      border-bottom: 1px solid #3b3f4a;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .result-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.9rem;
+      color: #abb0bb;
+      border-bottom: 1px solid #343842;
+      font: 0.68rem ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .result-row:last-child { border-bottom: 0; }
+    .result-status { width: 0.55rem; height: 0.55rem; flex: 0 0 auto; border-radius: 50%; }
+    .product-preview figcaption { margin-top: 0.75rem; color: #858b98; text-align: center; font-size: 0.82rem; }
 
     /* Feature grid */
     .features {
@@ -143,6 +280,13 @@
     }
     .answers h3:first-child { margin-top: 0; }
     .answers p { color: #a0a4b0; font-size: 0.94rem; }
+    .intent-card {
+      padding: 1.35rem 1.5rem;
+      background: linear-gradient(135deg, rgba(61,127,240,0.12), rgba(45,184,77,0.08));
+      border: 1px solid #394455;
+      border-radius: 8px;
+    }
+    .intent-card p { color: #bbc0cb; }
 
     /* Steps list */
     ol.steps { padding-left: 1.4rem; }
@@ -210,6 +354,24 @@
     .cta-secondary:hover {
       background: #2b6fdf;
     }
+    .final-cta {
+      padding: 2rem;
+      text-align: center;
+      background: #23262f;
+      border: 1px solid #3b404b;
+      border-radius: 10px;
+    }
+    .final-cta h2 { border: 0; padding: 0; margin-bottom: 0.6rem; }
+    .final-cta p { max-width: 560px; margin: 0 auto 0.8rem; }
+
+    @media (max-width: 620px) {
+      header { padding-top: 2.75rem; }
+      .preview-body { min-height: 360px; padding: 1.25rem; }
+      .preview-page { max-width: 100%; opacity: 0.55; }
+      .results-panel { top: 5.5rem; right: 1rem; left: 1rem; width: auto; }
+      .trust-list { display: grid; grid-template-columns: 1fr 1fr; text-align: left; }
+      .final-cta { padding: 1.5rem 1rem; }
+    }
 
     /* Footer */
     footer {
@@ -225,18 +387,57 @@
 <body>
 
 <header>
-  <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABnElEQVR4nOWaO3LDMAwFnzQuXPhYuo3P49vwWCnSJU2YMDJAAiBgcJLXSiJ3CX4sjzY45jiOD8l9pZTNq8/phqTQXGZlTA/PQnOxyOzaB6LgrW2LjSPBqUirIarAq+E1fQ4FMuA1fXcFMuGlDKzACvA1PRZSYCX4Go7pSWBF+BqKTX0OrJZfAiuM/vV+w/V+Y6+fGXfuQkZacKnEMlOIAu5J1CwjYM0O5E8fbqTfH2/sM5U5vQIW+DYXTxhtKHgpeM2WOX3OAlp4IHEKecADBoHRQSNtwysqAelBI22jxjr6gELAetCM7p+BBxzWgFQiAh5QCPQ6G0lEwQPKClgkIuEBw0HWdm5ZyJ7wwOQaOMOchbz2+l52zz9agR9oz72eSillm96FqFGNnvdtXH5KjOCi4IEvAY9pFAlJpTKnvw/MxlWAqkJ0Zb4FvHajFjgKvmV9gs5+Px7lPNB/bw14H2yeodjICqwowTGxU2gliR5Ldw2sIDFiGC7iTAlJ36JdKENC2qcaLPqc0A6W+hyIrIal7f/5sQeXjM9tPgFQWcCgrp2ZtgAAAABJRU5ErkJggg==" alt="CheckLinks icon"> CheckLinks</h1>
-  <p>A lightweight Chrome extension that checks every link on a page and highlights broken ones directly in place.</p>
-  <p class="hero-actions">
-    <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install on Chrome</a>
-  </p>
+  <div class="hero">
+    <p class="brand"><img src="icon128.png" alt=""> CheckLinks</p>
+    <h1>Free Broken Link Checker Chrome Extension</h1>
+    <p class="hero-copy">CheckLinks checks every link on the current page, highlights broken links in place, flags redirects and errors, and exports the results to CSV.</p>
+    <p class="hero-actions">
+      <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks on Chrome</a>
+    </p>
+    <ul class="trust-list" aria-label="CheckLinks benefits">
+      <li>Free to use</li>
+      <li>No account required</li>
+      <li>No analytics or tracking</li>
+      <li>Open-source on GitHub</li>
+      <li>Manifest V3</li>
+    </ul>
+  </div>
+
+  <!-- TODO: Replace this illustrative preview with a real product screenshot when one is available. -->
+  <figure class="product-preview" aria-labelledby="preview-caption">
+    <div class="browser-frame" role="img" aria-label="Illustration of CheckLinks highlighting working, redirected, and broken links while showing scan results">
+      <div class="browser-bar">
+        <span class="browser-dot"></span>
+        <span class="browser-dot"></span>
+        <span class="browser-dot"></span>
+        <span class="browser-address">example.com/resources</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-page" aria-hidden="true">
+          <div class="preview-line short"></div>
+          <div class="preview-line"></div>
+          <span class="preview-link ok">Documentation <strong>200</strong></span><br>
+          <span class="preview-link redirect">Archived guide <strong>301</strong></span><br>
+          <span class="preview-link">Old resource <strong>404</strong></span>
+        </div>
+        <div class="results-panel" aria-hidden="true">
+          <div class="results-heading"><span>CheckLinks Results</span><span>12 links</span></div>
+          <div class="result-row"><span class="result-status badge-green"></span><span>200 /documentation</span></div>
+          <div class="result-row"><span class="result-status badge-amber"></span><span>301 /archived-guide</span></div>
+          <div class="result-row"><span class="result-status badge-red"></span><span>404 /old-resource</span></div>
+          <div class="result-row"><span class="result-status badge-gray"></span><span>Timeout /partner-site</span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption id="preview-caption">CheckLinks scans the current page and shows link statuses directly in the browser.</figcaption>
+  </figure>
 </header>
 
 <div class="container">
 
   <!-- Features -->
-  <section>
-    <h2>Features</h2>
+  <section aria-labelledby="features-heading">
+    <h2 id="features-heading">Quickly Find Broken Links, Redirects, and Errors</h2>
     <div class="features">
       <div class="feature">
         <h3>Inline Overlays</h3>
@@ -265,30 +466,41 @@
     </div>
   </section>
 
-  <!-- Direct answers -->
-  <section>
-    <h2>Broken Link Checker for Chrome</h2>
+  <!-- Audience -->
+  <section aria-labelledby="built-for-heading">
+    <h2 id="built-for-heading">Broken Link Checker for Web Editors, QA Testers, and Developers</h2>
+    <p>CheckLinks is built for quick, single-page link audits. It helps content editors, website owners, developers, SEO reviewers, and QA teams find broken links, redirects, timeouts, and server errors without running a full-site crawl.</p>
+  </section>
+
+  <!-- Search intent -->
+  <section aria-labelledby="check-links-heading">
+    <div class="intent-card">
+      <h2 id="check-links-heading">Looking for a Chrome Extension to Check Links?</h2>
+      <p>If you need a simple way to check links on a webpage, CheckLinks gives you a privacy-friendly, one-click option for finding broken links, redirects, network errors, and timeouts directly in Chrome.</p>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section aria-labelledby="how-it-works-heading">
+    <h2 id="how-it-works-heading">How CheckLinks Works</h2>
     <div class="answers">
-      <h3>What is CheckLinks?</h3>
-      <p>CheckLinks is a free Chrome extension that checks the hyperlinks on the page you are viewing and marks each link with its result.</p>
+      <h3>Scan the page you are viewing</h3>
+      <p>Click the CheckLinks toolbar icon to collect the hyperlinks on the current page and begin checking them from your browser.</p>
 
-      <h3>How does CheckLinks find broken links?</h3>
-      <p>When you start a scan, CheckLinks reads the page's links, sends direct HTTP requests from your browser, and reports working links, redirects, client errors, server errors, timeouts, and network failures.</p>
+      <h3>See link status in context</h3>
+      <p>CheckLinks marks working links, redirects, 404 errors, server errors, timeouts, and network failures both on the page and in a filterable results panel.</p>
 
-      <h3>Who is CheckLinks for?</h3>
-      <p>CheckLinks is useful for website owners, editors, developers, QA testers, and support teams who need a fast way to audit links on a single page.</p>
-
-      <h3>Does CheckLinks collect data?</h3>
-      <p>No. CheckLinks has no analytics, no accounts, and no external service. Link checks are made directly from your browser to the URLs found on the current page.</p>
+      <h3>Export results for follow-up</h3>
+      <p>Download the scan as a CSV file for content cleanup, QA notes, SEO review, or issue tracking.</p>
     </div>
   </section>
 
   <!-- Install -->
-  <section>
-    <h2>Installation</h2>
+  <section aria-labelledby="install-heading">
+    <h2 id="install-heading">Install the CheckLinks Chrome Extension</h2>
     <h3 style="color:#fff;margin-bottom:0.5rem;">From Chrome Web Store (recommended)</h3>
     <p>
-      <a class="cta cta-secondary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks</a>
+      <a class="cta cta-secondary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks on Chrome</a>
     </p>
     <h3 style="color:#fff;margin:1.2rem 0 0.5rem;">From source (developer mode)</h3>
     <ol class="steps">
@@ -301,8 +513,8 @@
   </section>
 
   <!-- Usage -->
-  <section>
-    <h2>How to Use</h2>
+  <section aria-labelledby="usage-heading">
+    <h2 id="usage-heading">How to Use the CheckLinks Chrome Extension</h2>
     <ol class="steps">
       <li>Navigate to any web page you want to check</li>
       <li>Click the <strong>CheckLinks</strong> icon in the toolbar &mdash; a floating panel appears and scanning starts automatically</li>
@@ -316,8 +528,8 @@
   </section>
 
   <!-- Status reference -->
-  <section>
-    <h2>Link Status Reference</h2>
+  <section aria-labelledby="status-heading">
+    <h2 id="status-heading">Link Status Reference</h2>
     <table>
       <thead>
         <tr><th>Category</th><th>HTTP Status</th><th>Color</th></tr>
@@ -332,9 +544,34 @@
     </table>
   </section>
 
+  <!-- FAQ -->
+  <section aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Broken Link Checker Chrome Extension FAQ</h2>
+    <div class="answers">
+      <h3>What is the best way to check broken links on a single webpage?</h3>
+      <p>For a quick single-page check, a Chrome extension like CheckLinks can scan the links on the current page and highlight broken, redirected, timed-out, and working links directly in the browser.</p>
+
+      <h3>Does CheckLinks crawl an entire website?</h3>
+      <p>No. CheckLinks checks the page you are currently viewing. It is designed for editors, developers, SEO reviewers, and QA testers who need fast page-level link checks.</p>
+
+      <h3>Can CheckLinks export broken link results?</h3>
+      <p>Yes. CheckLinks exports scan results to CSV for reporting, QA notes, or follow-up cleanup.</p>
+
+      <h3>Does CheckLinks collect browsing data?</h3>
+      <p>No. CheckLinks has no analytics, no accounts, and no external service. Link checks are made directly from your browser to the URLs on the current page.</p>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta" aria-labelledby="final-cta-heading">
+    <h2 id="final-cta-heading">Check Every Link Without Leaving the Page</h2>
+    <p>Install the free CheckLinks Chrome extension and turn a tedious link audit into a one-click check.</p>
+    <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks on Chrome</a>
+  </section>
+
   <!-- Links -->
-  <section>
-    <h2>Links</h2>
+  <section aria-labelledby="links-heading">
+    <h2 id="links-heading">CheckLinks Resources</h2>
     <p>
       <a href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install from Chrome Web Store</a><br>
       <a href="https://github.com/leemark/checklinks">Source code &amp; issues on GitHub</a><br>
