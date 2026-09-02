@@ -514,6 +514,7 @@ figure.content-card { margin-right: 0; margin-left: 0; }
 }
 
 .footer-inner p { margin: 0; color: inherit; }
+.footer-inner p a { color: #aeb9c8; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 0.45rem 1rem; }
 .footer-links a { color: #aeb9c8; }
 
