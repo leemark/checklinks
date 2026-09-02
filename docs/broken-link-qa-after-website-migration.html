@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Broken-Link QA After a Website Migration | CheckLinks</title>
+  <meta name="description" content="A practical post-migration link QA workflow: map old URLs, sample templates, use CheckLinks to find stale internal links, and hand off evidence.">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="Mark Lee">
+  <meta name="theme-color" content="#181a20">
+  <link rel="canonical" href="https://leemark.github.io/checklinks/broken-link-qa-after-website-migration.html">
+  <link rel="icon" href="icon128.png" sizes="128x128" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="CheckLinks">
+  <meta property="og:title" content="Broken-Link QA After a Website Migration">
+  <meta property="og:description" content="Map old and new URLs, scan representative migrated pages with CheckLinks, and separate intentional redirects from stale internal links.">
+  <meta property="og:url" content="https://leemark.github.io/checklinks/broken-link-qa-after-website-migration.html">
+  <meta property="og:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Broken-Link QA After a Website Migration">
+  <meta name="twitter:description" content="A page-level CheckLinks workflow for post-migration URL triage, redirect review, re-scans, and CSV handoff.">
+  <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand-link" href="index.html" aria-label="CheckLinks home"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="broken-link-qa-after-website-migration.html" aria-current="page">Guides</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <article>
+      <header class="article-header">
+        <p class="eyebrow">Migration QA · CheckLinks guide</p>
+        <h1>Broken-Link QA After a Website Migration</h1>
+        <p class="article-meta">By Mark Lee · <time datetime="2026-09-01">Updated September 1, 2026</time></p>
+        <p class="direct-answer"><strong>Short answer:</strong> Start with an old-to-new URL map, scan representative pages on the migrated site with CheckLinks, and use <strong>Broken</strong>, <strong>Redirect</strong>, and <strong>Other</strong> to triage what the new page actually exposes. Export the findings for handoff, then run separate server and search-engine checks for the migration's full URL and SEO behavior.</p>
+      </header>
+
+      <section class="content-card">
+        <h2>Short demonstration: check a migrated page</h2>
+        <ol class="steps">
+          <li><strong>Build the map first.</strong> Keep the old URL, intended new URL, migration status, and owner in a working inventory. Mark whether each old URL should redirect, disappear, or remain unchanged. This map is what lets you judge a redirect instead of treating every 3xx as a defect.</li>
+          <li><strong>Choose representative templates.</strong> On the new host, open the homepage, global navigation and footer, a listing page, a detail or article page, a search or utility page, and a document/PDF landing page when those patterns exist. Include a few migrated pages with historically deep links or unusual query strings.</li>
+          <li><strong>Scan each rendered page.</strong> Click the CheckLinks icon and let the panel finish. Choose <strong>Broken</strong> to find 4xx/5xx destinations still embedded in new content. Choose <strong>Redirect</strong> to compare the followed target with the old-to-new map. Choose <strong>Other</strong> to isolate timeouts, network errors, and skipped links for a second pass.</li>
+          <li><strong>Fix internal sources, not just symptoms.</strong> Click a result to jump to the exact anchor on the page. An intentional old-to-new redirect may be correct for an external visitor, but an internal link that still points at the old path is usually stale: update it to the final destination and avoid adding an unnecessary hop.</li>
+          <li><strong>Re-scan and hand off.</strong> Re-run the page after fixes are live in the same environment. Export CSV and attach it to the migration ticket with the URL map, the sampled templates, and notes for any accepted redirect or transient failure.</li>
+        </ol>
+      </section>
+
+      <figure class="content-card">
+        <img class="screenshot" src="images/checklinks-filter-broken.jpg" alt="CheckLinks panel with the Broken filter selected and failed links listed" loading="lazy">
+        <figcaption class="caption">The Broken filter narrows the rendered page's results to 4xx and 5xx responses, making stale internal paths easier to inspect and fix in context.</figcaption>
+      </figure>
+
+      <section class="content-card">
+        <h2>Migration checks outside the extension</h2>
+        <p>These checks answer different questions and should stay in the migration plan:</p>
+        <ul>
+          <li>Test the old URL inventory against the server or edge layer and verify the intended 301/308 destination, redirect chains, loops, and query-string handling.</li>
+          <li>Inspect canonical URLs and hreflang relationships on the new pages, including language or regional variants.</li>
+          <li>Validate the new XML sitemap, robots.txt rules, accidental noindex headers or tags, and any excluded route patterns.</li>
+          <li>Use Search Console or the relevant webmaster tools to review indexing and discovered URL errors after launch.</li>
+          <li>Run a full inventory or crawler when the migration requires coverage of pages that are not linked from the representative samples.</li>
+        </ul>
+      </section>
+
+      <aside class="callout">
+        <h2>Keep the evidence honest</h2>
+        <ul class="limitation-list">
+          <li>CheckLinks checks anchors on the current rendered page. It does not crawl the whole migrated site, inspect orphaned URLs, or certify that every old URL has been handled.</li>
+          <li>Its request omits credentials, so private routes, preview access, session-dependent content, and WAF or bot challenges need verification through the migration's authenticated or server-side tooling.</li>
+          <li>A redirect result says that a request followed a redirect; it does not know whether that redirect was intentional. Compare it with the old-to-new map and check the source of internal links.</li>
+          <li>Timeouts and network failures can be transient. Re-scan or verify with an independent request before escalating, and do not turn this workflow into an SEO guarantee.</li>
+        </ul>
+      </aside>
+
+      <section class="final-cta" aria-labelledby="install-heading">
+        <h2 id="install-heading">Inspect a migrated page in context</h2>
+        <p>Use CheckLinks for the rendered-page portion of your migration QA pass.</p>
+        <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks from the Chrome Web Store</a>
+      </section>
+
+      <nav class="related-guides" aria-label="Related CheckLinks guides">
+        <h2>Related guides</h2>
+        <a href="how-to-check-links-before-publishing.html">How to Check Links Before Publishing</a>
+        <a href="broken-link-checking-for-documentation-teams.html">Broken-Link Checking for Documentation Teams</a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>CheckLinks · A focused link check for the page in front of you.</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/leemark/checklinks">GitHub</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

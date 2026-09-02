@@ -78,7 +78,13 @@ checklinks/
     icons/           # Extension icons (16/32/48/128px)
   docs/
     index.html       # Landing page (GitHub Pages)
+    styles.css       # Shared website styles
+    support.html     # Support and known limitations
+    how-to-check-links-before-publishing.html
+    broken-link-qa-after-website-migration.html
+    broken-link-checking-for-documentation-teams.html
     privacy.html     # Privacy policy
+    images/          # Product screenshots and social-sharing image
 ```
 
 ## Permissions
@@ -91,6 +97,7 @@ checklinks/
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp)
 - [Website](https://leemark.github.io/checklinks/)
+- [Support and known limitations](https://leemark.github.io/checklinks/support.html)
 - [Privacy policy](https://leemark.github.io/checklinks/privacy.html)
 
 ## License

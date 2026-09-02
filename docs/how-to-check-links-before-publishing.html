@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Check Links Before Publishing | CheckLinks</title>
+  <meta name="description" content="A practical CheckLinks workflow for scanning a staging or draft page, triaging broken links and redirects, and exporting a CSV before publication.">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="Mark Lee">
+  <meta name="theme-color" content="#181a20">
+  <link rel="canonical" href="https://leemark.github.io/checklinks/how-to-check-links-before-publishing.html">
+  <link rel="icon" href="icon128.png" sizes="128x128" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="CheckLinks">
+  <meta property="og:title" content="How to Check Links Before Publishing">
+  <meta property="og:description" content="Use CheckLinks on a staging or draft page to find broken links, inspect redirects, re-scan fixes, and hand off a CSV report.">
+  <meta property="og:url" content="https://leemark.github.io/checklinks/how-to-check-links-before-publishing.html">
+  <meta property="og:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Check Links Before Publishing">
+  <meta name="twitter:description" content="A page-level pre-publish link QA workflow with CheckLinks, including triage, re-scanning, and CSV handoff.">
+  <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand-link" href="index.html" aria-label="CheckLinks home"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="how-to-check-links-before-publishing.html" aria-current="page">Guides</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <article>
+      <header class="article-header">
+        <p class="eyebrow">Publishing QA · CheckLinks guide</p>
+        <h1>How to Check Links Before Publishing</h1>
+        <p class="article-meta">By Mark Lee · <time datetime="2026-09-01">Updated September 1, 2026</time></p>
+        <p class="direct-answer"><strong>Short answer:</strong> Open the staging or draft page in Chrome, run CheckLinks, filter <strong>Broken</strong>, <strong>Redirect</strong>, and <strong>Other</strong>, jump to each flagged link, fix the source, re-scan, and export the final CSV. This is page-level evidence, not a full-site crawl.</p>
+      </header>
+
+      <section class="content-card">
+        <h2>Short demonstration: a pre-publish pass</h2>
+        <ol class="steps">
+          <li><strong>Scan the version you are about to ship.</strong> Load the staging URL or draft preview as a reviewer would see it, then click the CheckLinks toolbar icon. The extension reads the page's <code>&lt;a href&gt;</code> links and shows status outlines in context while the floating results panel fills in.</li>
+          <li><strong>Triage by the panel's summary.</strong> Select <strong>Broken</strong> for 4xx and 5xx responses. Select <strong>Redirect</strong> to inspect links that resolve through a redirect. Select <strong>Other</strong> for network errors, timeouts, skipped fragment links, and non-HTTP schemes such as <code>mailto:</code> or <code>tel:</code>.</li>
+          <li><strong>Use click-to-jump for the fix.</strong> Click a result in the panel to scroll to the matching link on the page. Check the surrounding sentence, then correct the URL in the CMS, Markdown, template, or component that produced it. A valid response does not make an incorrect destination or misleading anchor text good.</li>
+          <li><strong>Re-scan the corrected page.</strong> Run a fresh scan after the edits are present in the same staging or preview environment. Work from the new result set so a previously captured failure does not get mistaken for current evidence.</li>
+          <li><strong>Export the handoff.</strong> When the remaining findings are understood, click <strong>Export CSV</strong>. The report includes URL, status, category, status text, and a followed redirect target when one is available. Attach it to the release ticket or keep it with the editorial sign-off.</li>
+        </ol>
+      </section>
+
+      <figure class="content-card">
+        <img class="screenshot" src="images/checklinks-results.jpg" alt="CheckLinks results panel over a sample web page with links outlined by status" loading="lazy">
+        <figcaption class="caption">The current page stays visible while CheckLinks summarizes OK, Redirect, Broken, and Other results. Selecting a result takes you back to that link in context.</figcaption>
+      </figure>
+
+      <section class="content-card">
+        <h2>What to verify before you call it clean</h2>
+        <p>Use the HTTP result as one gate in a release checklist. Read the destination, confirm the link supports the claim around it, and check that the page is intended to be discoverable. A 200 response can still lead to the wrong article, an empty app route, a noindex page, or content that does not match the anchor.</p>
+        <p>For a small site, scan the pages changed in the release plus the shared navigation, footer, and high-traffic landing pages. If a template produces many links, scan a representative rendered page and separately inspect any route or asset types the page does not expose as anchors.</p>
+      </section>
+
+      <aside class="callout">
+        <h2>Limitations to record in the sign-off</h2>
+        <ul class="limitation-list">
+          <li>CheckLinks scans links on the page currently open in Chrome. It does not discover every URL in a site, crawl orphaned pages, or replace a complete inventory.</li>
+          <li>Requests are made without the browser's credentials. Login-only destinations, session-dependent links, and WAF or bot protections can produce a failure even when a human can open the page; verify those separately in the intended account and environment.</li>
+          <li>Timeouts, DNS failures, and server errors can be transient. Recheck an <strong>Other</strong> result before filing a permanent defect, and preserve the CSV evidence and timestamp.</li>
+          <li>Non-HTTP links and fragment-only links are reported as skipped. Content quality, accessibility, indexability, and search ranking still need their own review.</li>
+        </ul>
+      </aside>
+
+      <section class="final-cta" aria-labelledby="install-heading">
+        <h2 id="install-heading">Ready for the next staging pass?</h2>
+        <p>Install CheckLinks in Chrome and keep the scan beside the page you are reviewing.</p>
+        <a class="cta cta-primary" href="https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp" target="_blank" rel="noopener noreferrer">Install CheckLinks from the Chrome Web Store</a>
+      </section>
+
+      <nav class="related-guides" aria-label="Related CheckLinks guides">
+        <h2>Related guides</h2>
+        <a href="broken-link-qa-after-website-migration.html">Broken-Link QA After a Website Migration</a>
+        <a href="broken-link-checking-for-documentation-teams.html">Broken-Link Checking for Documentation Teams</a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>CheckLinks · A focused link check for the page in front of you.</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/leemark/checklinks">GitHub</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

@@ -2,13 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://leemark.github.io/checklinks/</loc>
-    <lastmod>2026-06-07</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://leemark.github.io/checklinks/how-to-check-links-before-publishing.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leemark.github.io/checklinks/broken-link-qa-after-website-migration.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leemark.github.io/checklinks/broken-link-checking-for-documentation-teams.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leemark.github.io/checklinks/support.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://leemark.github.io/checklinks/privacy.html</loc>
-    <lastmod>2026-05-28</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

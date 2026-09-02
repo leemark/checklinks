@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CheckLinks Support and Known Limitations</title>
+  <meta name="description" content="Get help with CheckLinks and understand its page-level scope, restricted pages, authenticated links, timeouts, skipped links, and other known limitations.">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="Mark Lee">
+  <meta name="theme-color" content="#181a20">
+  <link rel="canonical" href="https://leemark.github.io/checklinks/support.html">
+  <link rel="icon" href="icon128.png" sizes="128x128" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CheckLinks">
+  <meta property="og:title" content="CheckLinks Support and Known Limitations">
+  <meta property="og:description" content="Troubleshooting, support, and an honest explanation of what CheckLinks can and cannot check.">
+  <meta property="og:url" content="https://leemark.github.io/checklinks/support.html">
+  <meta property="og:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CheckLinks Support and Known Limitations">
+  <meta name="twitter:description" content="Troubleshooting and known limitations for the CheckLinks Chrome extension.">
+  <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a class="brand-link" href="./"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
+      <ul class="nav-links">
+        <li><a href="./">Home</a></li>
+        <li><a href="./#guides">Guides</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="https://github.com/leemark/checklinks">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-shell reading-shell">
+    <header class="article-header">
+      <p class="eyebrow">Support</p>
+      <h1>CheckLinks support and known limitations</h1>
+      <p class="article-meta"><span>By Mark Lee</span><time datetime="2026-09-01">Updated September 1, 2026</time><span>Applies to CheckLinks 1.0.4</span></p>
+    </header>
+
+    <div class="direct-answer">
+      <strong>Start here</strong>
+      <p>Reload the page, click the CheckLinks icon again, and review <strong>Broken</strong>, <strong>Redirect</strong>, and <strong>Other</strong> separately. A timeout or blocked result is not automatically a broken link: retry it and open the destination normally before deciding.</p>
+    </div>
+
+    <div class="article-body">
+      <section aria-labelledby="quick-fixes-heading">
+        <h2 id="quick-fixes-heading">Quick fixes</h2>
+        <div class="support-grid">
+          <article class="content-card">
+            <h3>The panel did not appear</h3>
+            <ol class="steps">
+              <li>Confirm you are on a normal <code>http://</code> or <code>https://</code> webpage.</li>
+              <li>Reload the page and click the CheckLinks toolbar icon again.</li>
+              <li>If Chrome recently updated the extension, reload any tab that was already open.</li>
+            </ol>
+          </article>
+          <article class="content-card">
+            <h3>A link is marked timeout or error</h3>
+            <ol class="steps">
+              <li>Open the destination normally in a new tab.</li>
+              <li>Retry the scan in case the failure was temporary.</li>
+              <li>Check whether the destination requires a login, VPN, or bot challenge.</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="results-heading">
+        <h2 id="results-heading">How to interpret an ambiguous result</h2>
+        <figure class="screenshot">
+          <img src="images/checklinks-errors.jpg" width="1280" height="800" loading="lazy" alt="CheckLinks showing timeout and network-error details in the Other results filter">
+          <figcaption>CheckLinks separates HTTP failures from timeouts and network errors so you can investigate instead of treating every failure as a 404.</figcaption>
+        </figure>
+        <div class="callout">
+          <p><strong>A status is an observation, not a verdict.</strong> A 404 or 500 response is strong evidence of a problem. A timeout, blocked response, or network error needs context because the destination may answer differently to a normal click or an authenticated user.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="limitations-heading">
+        <h2 id="limitations-heading">Known limitations</h2>
+        <ul class="limitation-list">
+          <li><strong>One open page at a time.</strong> CheckLinks checks links already present on the current page. It does not crawl an entire website, follow internal links to discover more pages, or run scheduled monitoring.</li>
+          <li><strong>Restricted browser pages.</strong> Chrome does not allow extensions to inject into browser-controlled pages such as <code>chrome://</code> URLs. The Chrome Web Store and some other protected surfaces may also restrict extension behavior.</li>
+          <li><strong>No login cookies in link-check requests.</strong> CheckLinks omits credentials when it checks a URL. A private or session-dependent destination may therefore return a login page, redirect, 401, 403, or blocked result even though it works after a normal signed-in click.</li>
+          <li><strong>Sites can block automated checks.</strong> Rate limits, bot protection, firewalls, VPN rules, CORS or browser policies, DNS problems, and SSL errors can produce a blocked, network-error, or timeout result.</li>
+          <li><strong>Ten-second timeout.</strong> A very slow destination can time out even if it eventually loads. Scans are throttled to be respectful, so pages with many unique links take longer.</li>
+          <li><strong>Skipped link types.</strong> Pure fragment links and non-web schemes such as <code>mailto:</code>, <code>tel:</code>, <code>javascript:</code>, and <code>data:</code> are skipped rather than fetched.</li>
+          <li><strong>Dynamic pages need a rescan.</strong> Links added after a scan starts are not part of that run. Let the page finish loading, then scan again.</li>
+          <li><strong>HTTP status is not content QA.</strong> A 2xx response does not prove the destination is the right page, that its content is current, that a form works, or that the page is accessible or indexable.</li>
+          <li><strong>Results are not a permanent workspace.</strong> Export the CSV before closing or navigating away if you need a handoff or record of the scan.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Permissions and privacy</h2>
+        <div class="content-card">
+          <p>CheckLinks uses <code>activeTab</code> and scripting access when you click its toolbar icon, plus host permissions so its background worker can request linked URLs. It has no account, analytics, or tracking, and does not send scan results to a developer-operated service.</p>
+          <p>Read the full <a href="privacy.html">CheckLinks privacy policy</a> or inspect the <a href="https://github.com/leemark/checklinks">open-source code</a>.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="report-heading">
+        <h2 id="report-heading">Report a problem</h2>
+        <p>If the steps above do not resolve it, <a href="https://github.com/leemark/checklinks/issues/new">open a GitHub issue</a> with:</p>
+        <ul>
+          <li>your Chrome and CheckLinks versions;</li>
+          <li>the result category and exact status text;</li>
+          <li>steps that reproduce the problem; and</li>
+          <li>a public example URL when possible.</li>
+        </ul>
+        <p>Do not post private, signed-in, client, or staging URLs in a public issue. A redacted screenshot is often enough.</p>
+      </section>
+
+      <section class="developer-card" aria-labelledby="maintainer-heading">
+        <div class="developer-avatar" aria-hidden="true">ML</div>
+        <div>
+          <h2 id="maintainer-heading">Support from the developer</h2>
+          <p>I’m Mark Lee, the solo developer maintaining CheckLinks as a free, open-source project. Clear reproduction steps make it much easier for me to help.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>&copy; 2026 CheckLinks · Maintained by Mark Lee</p>
+      <div class="footer-links">
+        <a href="./">Home</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/leemark/checklinks">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

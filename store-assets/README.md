@@ -22,7 +22,7 @@ https://leemark.github.io/checklinks/
 
 **Support**
 
-https://github.com/leemark/checklinks/issues
+https://leemark.github.io/checklinks/support.html
 
 **Privacy policy**
 
@@ -68,4 +68,4 @@ The extension uses activeTab and scripting only after you select its toolbar ico
 4. Distinguish timeouts and network errors.
 5. Export a clean CSV report.
 
-The capture fixture in `capture/` provides deterministic 200, redirect, 404, 500, timeout, and skipped-link states. It is development-only and is not included in the extension package.
+The capture fixture in `capture/` provides deterministic 200, redirect, 404, 500, timeout, and skipped-link states, plus a reproducible 1200×630 social card. It is development-only and is not included in the extension package.
