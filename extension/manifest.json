@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CheckLinks",
-  "version": "1.0.0",
-  "description": "Check all hyperlinks on a page for broken links.",
+  "name": "CheckLinks – Broken Link Checker",
+  "version": "1.0.4",
+  "description": "Find broken links and redirects on any webpage, highlight them in place, and export results to CSV.",
   "homepage_url": "https://leemark.github.io/checklinks/",
   "permissions": [
     "activeTab",

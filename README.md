@@ -13,6 +13,7 @@ A Chrome extension that checks all hyperlinks on a web page for broken links. Cl
 - **Filter & scroll-to** — filter results by status category and click any result to scroll directly to the link on the page
 - **Detailed error reporting** — network errors are classified (DNS failure, connection refused, SSL error, timeout, etc.) with explanations shown in the results
 - **CSV export** — download scan results as a CSV file
+- **Respectful review request** — a small optional review link sits quietly at the bottom of the panel. It never interrupts a scan and records no activity data.
 - **Throttled requests** — checks 3 links concurrently with delays between requests using HEAD (with GET fallback) to avoid overwhelming servers
 - **Lightweight** — plain JavaScript, no build step, no dependencies
 

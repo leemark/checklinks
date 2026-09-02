@@ -18,6 +18,8 @@
     let totalLinks = 0;
     let activeFilter = null; // null = show all, or a category group name
 
+    const REVIEW_URL = "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp/reviews";
+
     // ── Build panel DOM ──────────────────────────────────────────────
 
     const panel = document.createElement("div");
@@ -133,12 +135,32 @@
     const resultsList = document.createElement("ul");
     resultsList.className = "checklinks-results";
 
+    // A deliberately quiet, non-modal review request. It is always available
+    // at the bottom of the panel and never persisted or tracked.
+    const reviewPrompt = document.createElement("aside");
+    reviewPrompt.className = "checklinks-review";
+    reviewPrompt.setAttribute("aria-label", "Review CheckLinks");
+
+    const reviewText = document.createElement("span");
+    reviewText.textContent = "I’m a solo developer sharing CheckLinks for free. A review would mean a lot.";
+
+    const reviewLink = document.createElement("a");
+    reviewLink.className = "checklinks-review-link";
+    reviewLink.href = REVIEW_URL;
+    reviewLink.target = "_blank";
+    reviewLink.rel = "noopener noreferrer";
+    reviewLink.textContent = "Leave a review";
+
+    reviewPrompt.appendChild(reviewText);
+    reviewPrompt.appendChild(reviewLink);
+
     // Assemble panel
     panel.appendChild(header);
     panel.appendChild(controls);
     panel.appendChild(summary);
     panel.appendChild(progressBar);
     panel.appendChild(resultsList);
+    panel.appendChild(reviewPrompt);
     document.body.appendChild(panel);
 
     // ── Drag logic ───────────────────────────────────────────────────

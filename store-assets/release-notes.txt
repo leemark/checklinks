@@ -1,0 +1,1 @@
+Version 1.0.4 improves the extension name and store presentation and adds a small optional review link at the bottom of the panel. It never interrupts a scan and records no activity data. Scan results remain in memory and are not persisted.

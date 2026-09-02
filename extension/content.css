@@ -222,6 +222,40 @@
   background: #f1f5f9;
 }
 
+/* ── Optional review request ─────────────────────────────────────── */
+
+.checklinks-review[hidden] {
+  display: none;
+}
+
+.checklinks-review {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px 7px 16px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.checklinks-review > span {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.checklinks-review-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.checklinks-review-link:hover {
+  text-decoration: underline;
+}
+
 .checklinks-dot {
   width: 8px;
   height: 8px;

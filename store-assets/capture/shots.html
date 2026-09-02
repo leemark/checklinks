@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CheckLinks Store Screenshot</title>
+  <link rel="stylesheet" href="/content.css">
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #eef2f7;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: #eef2f7; }
+    .site-header { display: none; }
+    .site-header-inner { display: flex; align-items: center; justify-content: space-between; width: calc(100% - 72px); height: 100%; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; }
+    .brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #3b82f6; }
+    .nav { display: flex; gap: 22px; color: #cbd5e1; font-size: 13px; }
+    .canvas { height: 100%; padding: 26px 36px; background: linear-gradient(130deg, #f8fafc 0%, #eef2f7 58%, #e8eef7 100%); }
+    .story { width: 570px; }
+    .story-kicker { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: #2563eb; font-size: 12px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+    .story-kicker img { width: 22px; height: 22px; }
+    h1 { max-width: 560px; margin: 0; color: #111827; font-size: 38px; line-height: 1.06; letter-spacing: -0.045em; }
+    .subhead { max-width: 550px; margin: 10px 0 0; color: #526078; font-size: 15px; line-height: 1.5; }
+    .page-label { margin: 21px 0 9px; color: #667085; font-size: 11px; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 560px; }
+    .card { min-height: 70px; padding: 11px 13px; background: #fff; border: 1px solid #dbe3ef; border-radius: 9px; box-shadow: 0 6px 18px rgba(38, 55, 80, .05); }
+    .card-label { margin: 0 0 5px; color: #667085; font-size: 10px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
+    .card a { color: #1d4ed8; font-size: 14px; font-weight: 750; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+    .card p { margin: 5px 0 0; color: #7a8496; font-size: 11px; }
+    .trust { display: flex; gap: 11px; margin-top: 12px; color: #526078; font-size: 11px; font-weight: 700; }
+    .trust span::before { content: "✓"; margin-right: 5px; color: #16a34a; font-weight: 900; }
+    .csv-preview { display: none; width: 560px; margin-top: 12px; overflow: hidden; border: 1px solid #cfd8e5; border-radius: 9px; background: #fff; box-shadow: 0 8px 24px rgba(38,55,80,.08); }
+    .csv-preview.visible { display: block; }
+    .csv-title { display: flex; justify-content: space-between; padding: 9px 13px; background: #172033; color: #fff; font-size: 11px; font-weight: 750; }
+    .csv-row { display: grid; grid-template-columns: 1.6fr .45fr .65fr; gap: 10px; padding: 7px 13px; border-top: 1px solid #eef2f7; color: #526078; font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .csv-row.header { color: #334155; font-weight: 800; background: #f8fafc; }
+    .shot-5 .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 560px; }
+    .shot-5 .card { min-height: 70px; }
+    .shot-5 .card:nth-child(n+7) { display: none; }
+    .shot-5 .page-label { margin-top: 20px; }
+    .shot-5 .trust { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand"><span class="brand-mark">✓</span><span>Northstar Docs</span></div>
+      <div class="nav"><span>Guides</span><span>Resources</span><span>Support</span></div>
+    </div>
+  </header>
+  <main class="canvas">
+    <section class="story">
+      <p class="story-kicker"><img src="/icon128.png" alt=""> CheckLinks</p>
+      <h1 id="headline"></h1>
+      <p class="subhead" id="subhead"></p>
+      <p class="page-label">Resource library · Pre-publish QA</p>
+      <section class="grid" aria-label="Resource links">
+        <article class="card"><p class="card-label">Editorial guide</p><a href="https://northstar.example/missing-guide">Content standards handbook</a><p>Writing and publishing standards.</p></article>
+        <article class="card"><p class="card-label">Documentation</p><a href="https://northstar.example/old-docs">Archived documentation URL</a><p>Moved to a new destination.</p></article>
+        <article class="card"><p class="card-label">Main site</p><a href="https://northstar.example/ok-home">Organization homepage</a><p>Primary public website.</p></article>
+        <article class="card"><p class="card-label">Partner portal</p><a href="https://northstar.example/slow">External partner resources</a><p>Responds too slowly.</p></article>
+        <article class="card"><p class="card-label">Media kit</p><a href="https://northstar.example/missing-image">Brand image archive</a><p>Media downloads and logos.</p></article>
+        <article class="card"><p class="card-label">Status</p><a href="https://northstar.example/server-error">Service status report</a><p>Current service information.</p></article>
+        <article class="card"><p class="card-label">Plans</p><a href="https://northstar.example/ok-pricing">Current pricing guide</a><p>Up-to-date plan information.</p></article>
+        <article class="card"><p class="card-label">Contact</p><a href="https://northstar.example/ok-contact">Contact the web team</a><p>Ask a publishing question.</p></article>
+        <article class="card"><p class="card-label">Email</p><a href="mailto:qa@example.test">Email the QA team</a><p>Non-HTTP link.</p></article>
+      </section>
+      <section class="csv-preview" id="csvPreview" aria-label="CSV export preview">
+        <div class="csv-title"><span>checklinks-report.csv</span><span>Exported results</span></div>
+        <div class="csv-row header"><span>URL</span><span>Status</span><span>Category</span></div>
+        <div class="csv-row"><span>/missing-guide</span><span>404</span><span>client_error</span></div>
+        <div class="csv-row"><span>/old-docs</span><span>200</span><span>redirect</span></div>
+      </section>
+      <div class="trust"><span>Free to use</span><span>No account</span><span>No analytics or tracking</span><span>Open source</span></div>
+    </section>
+  </main>
+
+  <script>
+    const shot = Number(new URLSearchParams(location.search).get("shot") || "1");
+    document.body.classList.add(`shot-${shot}`);
+
+    const stories = {
+      1: ["Find broken links right on the page", "See the 404 in context—not buried in a separate report."],
+      2: ["Click once. Watch results appear.", "Working links, redirects, failures, and timeouts are classified as they are checked."],
+      3: ["Go straight to the link that needs fixing", "Filter the results, click an item, and jump to its exact location."],
+      4: ["An error should tell you what happened", "See timeouts and skipped links separately, with clear detail for network failures."],
+      5: ["Export a clean report when you’re done", "CSV for QA notes, content cleanup, or sharing with your team."]
+    };
+    document.getElementById("headline").textContent = stories[shot][0];
+    document.getElementById("subhead").textContent = stories[shot][1];
+    if (shot === 5) document.getElementById("csvPreview").classList.add("visible");
+
+    const listeners = [];
+    window.chrome = {
+      runtime: {
+        onMessage: { addListener(listener) { listeners.push(listener); } },
+        sendMessage(message, callback) {
+          if (message.type !== "CHECK_LINKS") return;
+          const origin = "https://northstar.example";
+          const results = [
+            { url: `${origin}/missing-guide`, status: 404, statusText: "Not Found", category: "client_error" },
+            { url: `${origin}/server-error`, status: 500, statusText: "Internal Server Error", category: "server_error" },
+            { url: `${origin}/missing-image`, status: 404, statusText: "Not Found", category: "client_error" },
+            { url: `${origin}/slow`, status: 0, statusText: "Timeout", errorDetail: "Request timed out after 10 seconds", category: "timeout" },
+            { url: `${origin}/old-docs`, status: 200, statusText: "OK", category: "redirect", redirectedTo: `${origin}/docs` },
+            { url: `${origin}/ok-home`, status: 200, statusText: "OK", category: "ok" },
+            { url: `${origin}/ok-pricing`, status: 200, statusText: "OK", category: "ok" },
+            { url: `${origin}/ok-contact`, status: 200, statusText: "OK", category: "ok" },
+            { url: "mailto:qa@example.test", status: 0, statusText: "Skipped", category: "skipped" }
+          ];
+
+          const send = (payload) => listeners.forEach((listener) => listener(payload, {}, () => {}));
+          const visibleResults = shot === 2 ? results.slice(0, 6) : results;
+          visibleResults.forEach((result, index) => {
+            setTimeout(() => send({ type: "LINK_RESULT", payload: result }), 130 + (index * 85));
+          });
+
+          if (shot !== 2) {
+            setTimeout(() => {
+              send({ type: "SCAN_COMPLETE" });
+              if (shot === 3) {
+                document.querySelector(".checklinks-stat-broken")?.click();
+                setTimeout(() => document.querySelector(".checklinks-results li")?.click(), 80);
+              }
+              if (shot === 4) document.querySelector(".checklinks-stat-other")?.click();
+            }, 1050);
+          }
+
+          if (callback) callback({ status: "started", total: 9 });
+        }
+      }
+    };
+  </script>
+  <script src="/content.js"></script>
+</body>
+</html>
