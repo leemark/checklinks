@@ -1,1 +1,1 @@
-Version 1.0.4 improves the extension name and store presentation and adds a small optional review link at the bottom of the panel. It never interrupts a scan and records no activity data. Scan results remain in memory and are not persisted.
+Version 1.0.5 fixes two issues in the results panel. Scans no longer include CheckLinks' own panel links, such as the optional review link, so counts and CSV exports reflect only the page you are checking. The summary counts now keep a fixed layout, so the panel no longer shifts or resizes as the numbers grow during a scan.
