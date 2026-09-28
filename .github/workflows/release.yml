@@ -1,0 +1,54 @@
+# Publishes a GitHub release for a version tag, with a zip of extension/ attached.
+# Runs when a v* tag is pushed, or manually for an existing tag.
+# The zip is built from the tagged commit. Release notes come from
+# .github/release-notes/<tag>.md on the branch the workflow runs from (the tag
+# itself for a tag push, usually main for a manual run); if that file is
+# missing, GitHub generates notes from merged PRs.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (e.g. v1.0.5)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check manifest version matches tag
+        run: |
+          version=$(git show "$TAG:extension/manifest.json" | jq -r .version)
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match manifest version $version"
+            exit 1
+          fi
+
+      - name: Build extension zip
+        run: |
+          mkdir -p dist
+          git archive --format=zip -o "dist/checklinks-${TAG#v}.zip" "$TAG:extension"
+
+      - name: Create release
+        run: |
+          notes=".github/release-notes/$TAG.md"
+          if [ -f "$notes" ]; then
+            set -- --notes-file "$notes"
+          else
+            set -- --generate-notes
+          fi
+          gh release create "$TAG" "dist/checklinks-${TAG#v}.zip" \
+            --verify-tag --title "CheckLinks ${TAG#v}" "$@"
