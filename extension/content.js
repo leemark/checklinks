@@ -20,6 +20,12 @@
 
     const REVIEW_URL = "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp/reviews";
 
+    // Links on the host page, excluding CheckLinks' own panel (e.g. the review link)
+    function getPageAnchors() {
+      return Array.from(document.querySelectorAll("a[href]"))
+        .filter((anchor) => !anchor.closest("#checklinks-panel"));
+    }
+
     // ── Build panel DOM ──────────────────────────────────────────────
 
     const panel = document.createElement("div");
@@ -249,7 +255,7 @@
       resultsList.innerHTML = "";
       clearOverlays();
 
-      const allAnchors = document.querySelectorAll("a[href]");
+      const allAnchors = getPageAnchors();
       const urls = [];
 
       allAnchors.forEach((anchor) => {
@@ -274,7 +280,7 @@
       totalLinks = urls.length;
       scanning = true;
       statusEl.textContent = `Checking ${urls.length} links...`;
-      summary.style.display = "flex";
+      summary.style.display = "";
       progressBar.style.display = "block";
       progressFill.style.width = "0%";
       renderResults(allResults);
@@ -301,7 +307,7 @@
 
       const style = colorMap[result.category] || colorMap.error;
 
-      document.querySelectorAll("a[href]").forEach((anchor) => {
+      getPageAnchors().forEach((anchor) => {
         if (anchor.href === result.url) {
           anchor.style.outline = `2px solid ${style.border}`;
           anchor.style.outlineOffset = "2px";
@@ -361,7 +367,7 @@
       });
 
       // Find the first matching anchor on the page
-      const anchors = document.querySelectorAll("a[href]");
+      const anchors = getPageAnchors();
       for (const anchor of anchors) {
         if (anchor.href === url) {
           anchor.scrollIntoView({ behavior: "smooth", block: "start" });
