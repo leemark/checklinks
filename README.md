@@ -87,6 +87,14 @@ checklinks/
     images/          # Product screenshots and social-sharing image
 ```
 
+## Releasing
+
+1. Bump `version` in `extension/manifest.json` and merge to `main`.
+2. Optionally add release notes at `.github/release-notes/vX.Y.Z.md`; without that file, GitHub generates notes from merged PRs.
+3. Push a matching tag (`git tag -a vX.Y.Z -m "CheckLinks X.Y.Z" && git push origin vX.Y.Z`).
+
+The **Release** workflow then checks that the tag matches the manifest version, zips `extension/` and publishes a GitHub release with the zip attached. For a tag that already exists, run the workflow manually from the Actions tab and enter the tag.
+
 ## Permissions
 
 - **activeTab** — access to the current tab only when you click the icon
