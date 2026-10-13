@@ -42,7 +42,7 @@
         "name": "CheckLinks",
         "applicationCategory": "BrowserApplication",
         "operatingSystem": "Chrome",
-        "softwareVersion": "1.0.5",
+        "softwareVersion": "1.1.0",
         "description": "CheckLinks checks links on the current page, highlights broken links, redirects, timeouts, and network errors, and exports results to CSV.",
         "url": "https://leemark.github.io/checklinks/",
         "installUrl": "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp",
@@ -70,7 +70,7 @@
       <a class="brand-link" href="./"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
       <ul class="nav-links">
         <li><a href="#comparison">Comparison</a></li>
-        <li><a href="#guides">Guides</a></li>
+        <li><a href="index.html#guides">Guides</a></li>
         <li><a href="support.html">Support</a></li>
         <li><a href="https://github.com/leemark/checklinks">GitHub</a></li>
       </ul>
@@ -89,7 +89,7 @@
       </div>
       <figure class="product-proof">
         <img src="images/checklinks-results.jpg" width="1280" height="800" fetchpriority="high" alt="A real CheckLinks scan showing green working links, an amber redirect, red broken links, a timeout, and the results panel on the right">
-        <figcaption>Real CheckLinks results from the same reproducible demonstration used for the Chrome Web Store screenshots.</figcaption>
+        <figcaption>Review each result in the context of the page you are checking.</figcaption>
       </figure>
     </div>
   </header>
@@ -102,8 +102,8 @@
       </div>
       <div class="feature-grid">
         <article class="feature"><h3>Highlight links in place</h3><p>Working links, redirects, broken responses, timeouts, and network errors get clear colored outlines and status badges.</p></article>
-        <article class="feature"><h3>Filter and jump to a result</h3><p>Use the summary filters, then select a result to scroll to its first matching link on the page.</p></article>
-        <article class="feature"><h3>Export a useful handoff</h3><p>Download the URL, status, category, status text, and redirect destination as a CSV for follow-up.</p></article>
+        <article class="feature"><h3>Filter and show on page</h3><p>Use the accessible OK, Redirect, Broken, Other, and Total filters, then select <strong>Show on page</strong> to jump to the link.</p></article>
+        <article class="feature"><h3>Export a useful handoff</h3><p><strong>Export all CSV</strong> saves every result, including a partial report after you stop a scan.</p></article>
       </div>
     </section>
     <section id="comparison" class="section" aria-labelledby="comparison-heading">
@@ -129,10 +129,10 @@
     <section class="section" aria-labelledby="workflow-heading">
       <div class="section-heading"><p class="eyebrow">One-page workflow</p><h2 id="workflow-heading">Scan, inspect, fix, and recheck</h2></div>
       <ol class="steps">
-        <li>Open the page you want to review and click the CheckLinks toolbar icon. Scanning starts automatically.</li>
+        <li>Open the page you want to review and click the CheckLinks toolbar icon. The first click starts a scan; later clicks show or hide the panel. If needed, pin CheckLinks from Chrome's Extensions menu.</li>
         <li>Start with <strong>Broken</strong>, then review <strong>Redirect</strong> and <strong>Other</strong> results such as timeouts.</li>
-        <li>Click a result to jump to the first matching link, make the change in your editor or CMS, and reload the page.</li>
-        <li>Run CheckLinks again to confirm the fix. Export the CSV if another person needs the results.</li>
+        <li>Use <strong>Show on page</strong> to jump to a matching link, make the change in your editor or CMS, and reload the page.</li>
+        <li>Use <strong>Scan Page</strong> to confirm the fix. <strong>Clear results</strong> removes the report and overlays; <strong>Export all CSV</strong> saves all current results.</li>
       </ol>
       <p>Developers who want to inspect or install the source can follow the <a href="https://github.com/leemark/checklinks#from-source-developer-mode">developer-mode instructions on GitHub</a>.</p>
     </section>
@@ -152,8 +152,8 @@
           <tbody>
             <tr><th scope="row"><span class="status-dot status-ok"></span>OK</th><td>2xx response</td><td>No HTTP problem found; still confirm the destination content is correct.</td></tr>
             <tr><th scope="row"><span class="status-dot status-redirect"></span>Redirect</th><td>The request ended at another URL</td><td>Decide whether the page should link directly to the final destination.</td></tr>
-            <tr><th scope="row"><span class="status-dot status-broken"></span>Broken</th><td>4xx or 5xx response</td><td>Correct, replace, or intentionally remove the link.</td></tr>
-            <tr><th scope="row"><span class="status-dot status-other"></span>Other</th><td>Timeout, blocked request, network error, or skipped link</td><td>Retry and investigate in context before calling the link broken.</td></tr>
+            <tr><th scope="row"><span class="status-dot status-broken"></span>Broken</th><td>Most 4xx or 5xx responses</td><td>Correct, replace, or intentionally remove the link after checking the destination.</td></tr>
+            <tr><th scope="row"><span class="status-dot status-other"></span>Other</th><td>Needs access, Rate limited, timeout, blocked request, network error, or skipped link</td><td>Retry and investigate in context. Access and rate-limit results are unverified and are not necessarily broken.</td></tr>
           </tbody>
         </table>
       </div>
@@ -161,9 +161,9 @@
     <section class="section" aria-labelledby="faq-heading">
       <div class="section-heading"><h2 id="faq-heading">CheckLinks FAQ</h2></div>
       <div class="answer-list">
-        <div><h3>Does CheckLinks crawl an entire website?</h3><p>No. It checks links on the page currently open in Chrome. Use a full-site crawler when you need broad discovery, scheduled monitoring, or complete inventory coverage.</p></div>
+        <div><h3>Does CheckLinks crawl an entire website?</h3><p>No. It checks unique HTTP/HTTPS links in the current main document at scan time. Frames, shadow roots, and links added later are outside that scan; use a full-site crawler when you need broad discovery or scheduled monitoring.</p></div>
         <div><h3>Can a timeout or blocked result still work when clicked?</h3><p>Yes. A site may require login cookies, block automated requests, rate-limit traffic, or respond differently to a browser-based check. Retry and verify ambiguous results manually.</p></div>
-        <div><h3>Does CheckLinks collect browsing data?</h3><p>No. CheckLinks has no account, analytics, or tracking. It does not send scan results to a service operated by the developer.</p></div>
+        <div><h3>Does CheckLinks collect browsing data?</h3><p>No. CheckLinks has no account, telemetry, analytics, or tracking backend. Requests go directly from your browser to linked destinations, and scan results stay in memory unless you save a local CSV.</p></div>
         <div><h3>Where can I find troubleshooting and known limitations?</h3><p>See the <a href="support.html">CheckLinks support and known-limitations page</a> for restricted pages, skipped links, authenticated sites, timeouts, and reporting an issue.</p></div>
       </div>
     </section>
@@ -172,7 +172,7 @@
       <div>
         <h2 id="developer-heading">Built and maintained by <a href="https://themarklee.com/">Mark Lee</a></h2>
         <p>I’m a solo developer sharing CheckLinks for free. The code is open source, and practical bug reports are welcome.</p>
-        <p><a href="https://github.com/leemark/checklinks">View the project on GitHub</a> · <time datetime="2026-09-01">Last maintained September 1, 2026</time></p>
+        <p><a href="https://github.com/leemark/checklinks">View the project on GitHub</a></p>
       </div>
     </section>
     <section class="final-cta" aria-labelledby="final-heading">
@@ -184,7 +184,7 @@
   <footer class="site-footer">
     <div class="footer-inner">
       <p>&copy; 2026 CheckLinks · Maintained by <a href="https://themarklee.com/">Mark Lee</a></p>
-      <div class="footer-links"><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="https://github.com/leemark/checklinks">GitHub</a></div>
+      <nav class="footer-links" aria-label="Footer navigation"><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="https://github.com/leemark/checklinks">GitHub</a></nav>
     </div>
   </footer>
 </body>

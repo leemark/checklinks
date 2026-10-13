@@ -1,519 +1,401 @@
 (() => {
-  // If already injected, toggle the panel
-  if (window.__checkLinksInjected) {
-    const existing = document.getElementById("checklinks-panel");
-    if (existing) {
-      existing.style.display = existing.style.display === "none" ? "flex" : "none";
-    } else {
-      init();
-    }
+  if (window.__checkLinksUI?.host.isConnected) {
+    window.__checkLinksUI.toggle();
     return;
   }
-  window.__checkLinksInjected = true;
-  init();
 
-  function init() {
-    let allResults = [];
-    let scanning = false;
-    let totalLinks = 0;
-    let activeFilter = null; // null = show all, or a category group name
+  const REVIEW_URL = "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp/reviews";
+  const host = document.createElement("div");
+  host.id = "checklinks-panel";
+  // Host rules cannot leak into the panel. Important inline properties also protect
+  // its position from common site-wide div and custom-element rules.
+  host.style.cssText = "all:initial!important;position:fixed!important;z-index:2147483647!important;display:block!important;visibility:hidden!important;width:min(420px, calc(100vw - 16px))!important;max-height:calc(100vh - 16px)!important;left:0!important;top:16px!important;";
+  const root = host.attachShadow({ mode: "open" });
+  const stylesheet = document.createElement("link");
+  stylesheet.rel = "stylesheet";
+  stylesheet.href = chrome.runtime.getURL("content.css");
+  root.append(stylesheet);
 
-    const REVIEW_URL = "https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdicdmp/reviews";
+  function element(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+  function button(text, className = "button") {
+    const el = element("button", className, text);
+    el.type = "button";
+    return el;
+  }
 
-    // Links on the host page, excluding CheckLinks' own panel (e.g. the review link)
-    function getPageAnchors() {
-      return Array.from(document.querySelectorAll("a[href]"))
-        .filter((anchor) => !anchor.closest("#checklinks-panel"));
-    }
-
-    // ── Build panel DOM ──────────────────────────────────────────────
-
-    const panel = document.createElement("div");
-    panel.id = "checklinks-panel";
-    panel.className = "checklinks-panel";
-
-    // Header (drag handle)
-    const header = document.createElement("div");
-    header.className = "checklinks-header";
-
-    const titleRow = document.createElement("div");
-    titleRow.className = "checklinks-title-row";
-
-    const title = document.createElement("span");
-    title.className = "checklinks-title";
-
-    const titleIcon = document.createElement("span");
-    titleIcon.className = "checklinks-title-icon";
-    titleIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#444"/><path d="M13 24l8 9 14-16" stroke="#4CAF50" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-
-    title.appendChild(titleIcon);
-    title.appendChild(document.createTextNode("CheckLinks"));
-
-    const statusEl = document.createElement("span");
-    statusEl.className = "checklinks-status";
-    statusEl.textContent = "Ready";
-
-    const closeBtn = document.createElement("button");
-    closeBtn.className = "checklinks-close";
-    closeBtn.textContent = "\u2715";
-    closeBtn.title = "Close";
-    closeBtn.addEventListener("click", () => { panel.style.display = "none"; });
-
-    titleRow.appendChild(title);
-    titleRow.appendChild(closeBtn);
-    header.appendChild(titleRow);
-    header.appendChild(statusEl);
-
-    // Controls
-    const controls = document.createElement("div");
-    controls.className = "checklinks-controls";
-
-    const scanBtn = document.createElement("button");
-    scanBtn.className = "checklinks-btn checklinks-btn-primary";
-    scanBtn.textContent = "Scan Page";
-
-    const clearBtn = document.createElement("button");
-    clearBtn.className = "checklinks-btn";
-    clearBtn.textContent = "Clear";
-    clearBtn.disabled = true;
-
-    const exportBtn = document.createElement("button");
-    exportBtn.className = "checklinks-btn";
-    exportBtn.textContent = "Export CSV";
-    exportBtn.disabled = true;
-
-    controls.appendChild(scanBtn);
-    controls.appendChild(clearBtn);
-    controls.appendChild(exportBtn);
-
-    // Summary
-    const summary = document.createElement("div");
-    summary.className = "checklinks-summary";
-    summary.style.display = "none";
-
-    function makeStat(cls, label, filterKey) {
-      const div = document.createElement("div");
-      div.className = "checklinks-stat checklinks-stat-" + cls;
-      div.style.cursor = "pointer";
-      const num = document.createElement("span");
-      num.textContent = "0";
-      div.appendChild(num);
-      div.appendChild(document.createTextNode(" " + label));
-      div.addEventListener("click", () => {
-        if (activeFilter === filterKey) {
-          activeFilter = null;
-        } else {
-          activeFilter = filterKey;
-        }
-        updateFilterHighlight();
-        renderResults(allResults);
-      });
-      return { el: div, num, filterKey };
-    }
-
-    const statOk = makeStat("ok", "OK", "ok");
-    const statRedirect = makeStat("redirect", "Redirect", "redirect");
-    const statBroken = makeStat("broken", "Broken", "broken");
-    const statOther = makeStat("other", "Other", "other");
-    const statTotal = makeStat("total", "Total", null);
-    const allStats = [statOk, statRedirect, statBroken, statOther, statTotal];
-    summary.appendChild(statOk.el);
-    summary.appendChild(statRedirect.el);
-    summary.appendChild(statBroken.el);
-    summary.appendChild(statOther.el);
-    summary.appendChild(statTotal.el);
-
-    function updateFilterHighlight() {
-      for (const s of allStats) {
-        s.el.classList.toggle("checklinks-stat-active", activeFilter !== null && s.filterKey === activeFilter);
-      }
-    }
-
-    // Progress bar
-    const progressBar = document.createElement("div");
-    progressBar.className = "checklinks-progress-bar";
-    progressBar.style.display = "none";
-    const progressFill = document.createElement("div");
-    progressFill.className = "checklinks-progress-fill";
-    progressBar.appendChild(progressFill);
-
-    // Results list
-    const resultsList = document.createElement("ul");
-    resultsList.className = "checklinks-results";
-
-    // A deliberately quiet, non-modal review request. It is always available
-    // at the bottom of the panel and never persisted or tracked.
-    const reviewPrompt = document.createElement("aside");
-    reviewPrompt.className = "checklinks-review";
-    reviewPrompt.setAttribute("aria-label", "Review CheckLinks");
-
-    const reviewText = document.createElement("span");
-    reviewText.textContent = "I’m a solo developer sharing CheckLinks for free. A review would mean a lot.";
-
-    const reviewLink = document.createElement("a");
-    reviewLink.className = "checklinks-review-link";
-    reviewLink.href = REVIEW_URL;
-    reviewLink.target = "_blank";
-    reviewLink.rel = "noopener noreferrer";
-    reviewLink.textContent = "Leave a review";
-
-    reviewPrompt.appendChild(reviewText);
-    reviewPrompt.appendChild(reviewLink);
-
-    // Assemble panel
-    panel.appendChild(header);
-    panel.appendChild(controls);
-    panel.appendChild(summary);
-    panel.appendChild(progressBar);
-    panel.appendChild(resultsList);
-    panel.appendChild(reviewPrompt);
-    document.body.appendChild(panel);
-
-    // ── Drag logic ───────────────────────────────────────────────────
-
-    makeDraggable(panel, header);
-
-    function makeDraggable(el, handle) {
-      let isDragging = false;
-      let startX, startY, origLeft, origTop;
-
-      handle.style.cursor = "grab";
-
-      handle.addEventListener("mousedown", (e) => {
-        // Don't drag if clicking a button
-        if (e.target.tagName === "BUTTON") return;
-        isDragging = true;
-        handle.style.cursor = "grabbing";
-        startX = e.clientX;
-        startY = e.clientY;
-        const rect = el.getBoundingClientRect();
-        origLeft = rect.left;
-        origTop = rect.top;
-        e.preventDefault();
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        el.style.left = (origLeft + dx) + "px";
-        el.style.top = (origTop + dy) + "px";
-        // Clear any right/bottom anchoring once user drags
-        el.style.right = "auto";
-        el.style.bottom = "auto";
-      });
-
-      document.addEventListener("mouseup", () => {
-        if (isDragging) {
-          isDragging = false;
-          handle.style.cursor = "grab";
-        }
-      });
-    }
-
-    // ── Message listener ─────────────────────────────────────────────
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "LINK_RESULT") {
-        applyOverlay(message.payload);
-        // Update panel results incrementally
-        allResults.push(message.payload);
-        renderResults(allResults);
-        updateSummary(allResults);
-        updateProgress(allResults.length, totalLinks);
-      }
-      if (message.type === "SCAN_COMPLETE") {
-        scanning = false;
-        scanBtn.disabled = false;
-        clearBtn.disabled = false;
-        exportBtn.disabled = false;
-        statusEl.textContent = `Done. ${allResults.length} links checked.`;
-        progressFill.style.width = "100%";
-      }
-      if (message.type === "CLEAR_OVERLAYS") {
-        clearAll();
-        sendResponse({ status: "cleared" });
-      }
+  const panel = element("section", "panel");
+  panel.setAttribute("aria-label", "CheckLinks link checker");
+  panel.tabIndex = -1;
+  const header = element("header", "header");
+  const titleRow = element("div", "title-row");
+  const title = element("h2", "title", "CheckLinks");
+  const moveBtn = button("Move", "header-button move");
+  moveBtn.setAttribute("aria-label", "Move panel: drag or use arrow keys");
+  moveBtn.title = "Drag or use arrow keys to move the panel";
+  const closeBtn = button("✕", "header-button close");
+  closeBtn.setAttribute("aria-label", "Hide CheckLinks panel");
+  closeBtn.title = "Hide panel (a running scan continues)";
+  titleRow.append(title, moveBtn, closeBtn);
+  const status = element("p", "status", "Ready");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-atomic", "true");
+  header.append(titleRow, status);
+  const controls = element("div", "controls");
+  const scanBtn = button("Scan Page", "button primary");
+  const stopBtn = button("Stop");
+  const clearBtn = button("Clear results");
+  const exportBtn = button("Export all CSV");
+  controls.append(scanBtn, stopBtn, clearBtn, exportBtn);
+  const summary = element("div", "summary");
+  summary.setAttribute("role", "group");
+  summary.setAttribute("aria-label", "Filter results by status");
+  const filters = ["OK", "Redirect", "Broken", "Other", "Total"].map((label, i) => {
+    const key = ["ok", "redirect", "broken", "other", null][i];
+    const el = button("", "stat " + (key || "total"));
+    const count = element("span", "count", "0");
+    el.append(count, element("span", "", label));
+    el.addEventListener("click", () => {
+      activeFilter = activeFilter === key ? null : key;
+      refresh();
     });
+    summary.append(el);
+    return { el, count, key, label };
+  });
+  const progress = element("progress", "progress");
+  progress.max = 1;
+  progress.value = 0;
+  progress.setAttribute("aria-label", "Unique HTTP URLs checked");
+  const list = element("ul", "results");
+  list.setAttribute("aria-label", "Link results");
+  const empty = element("p", "empty", "No results yet.");
+  const review = element("aside", "review");
+  review.setAttribute("aria-label", "Review CheckLinks");
+  const reviewLink = element("a", "", "Leave a review");
+  reviewLink.href = REVIEW_URL;
+  reviewLink.target = "_blank";
+  reviewLink.rel = "noopener noreferrer";
+  review.append(element("span", "", "Finding CheckLinks useful? Your review helps this free, independent project."), reviewLink);
+  panel.append(header, controls, summary, progress, empty, list, review);
+  root.append(panel);
 
-    // ── Event handlers ───────────────────────────────────────────────
+  let previousFocus = document.activeElement;
+  let activeScanId = null;
+  let activeFilter = null;
+  let total = 0;
+  let checked = 0;
+  let skipped = 0;
+  let watchdog;
+  let sourcePage = "";
+  let scannedAt = "";
+  let reportState = "complete";
+  const entries = new Map();
+  const results = new Map();
+  const rows = new Map();
+  const overlays = new Map();
 
-    scanBtn.addEventListener("click", startScan);
-    clearBtn.addEventListener("click", clearAll);
-    exportBtn.addEventListener("click", exportCSV);
-
-    // Auto-start scan on first injection
-    startScan();
-
-    function startScan() {
-      scanBtn.disabled = true;
-      clearBtn.disabled = true;
-      exportBtn.disabled = true;
-      allResults = [];
-      activeFilter = null;
-      updateFilterHighlight();
-      resultsList.innerHTML = "";
-      clearOverlays();
-
-      const allAnchors = getPageAnchors();
-      const urls = [];
-
-      allAnchors.forEach((anchor) => {
-        const href = anchor.href;
-        const rawHref = anchor.getAttribute("href");
-
-        if (!anchor.dataset.checklinkUrl) {
-          anchor.dataset.checklinkUrl = href;
-        }
-
-        // Skip pure fragment-only links
-        if (rawHref && rawHref.startsWith("#")) {
-          const result = { url: href, status: 0, statusText: "Anchor", category: "skipped" };
-          applyOverlay(result);
-          allResults.push(result);
-          return;
-        }
-
-        urls.push(href);
-      });
-
-      totalLinks = urls.length;
-      scanning = true;
-      statusEl.textContent = `Checking ${urls.length} links...`;
-      summary.style.display = "";
-      progressBar.style.display = "block";
-      progressFill.style.width = "0%";
-      renderResults(allResults);
-      updateSummary(allResults);
-
-      chrome.runtime.sendMessage({
-        type: "CHECK_LINKS",
-        payload: { links: urls }
-      });
+  function position(left, top) {
+    const rect = host.getBoundingClientRect();
+    const x = Math.max(8, Math.min(left, innerWidth - rect.width - 8));
+    const y = Math.max(8, Math.min(top, innerHeight - rect.height - 8));
+    host.style.setProperty("left", x + "px", "important");
+    host.style.setProperty("top", y + "px", "important");
+  }
+  function clamp() {
+    const rect = host.getBoundingClientRect();
+    position(rect.left, rect.top);
+  }
+  function hide() {
+    host.style.setProperty("display", "none", "important");
+    if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+  }
+  function show() {
+    previousFocus = document.activeElement === host ? previousFocus : document.activeElement;
+    host.style.setProperty("display", "block", "important");
+    clamp();
+    panel.focus({ preventScroll: true });
+  }
+  window.__checkLinksUI = { host, toggle: () => host.style.display === "none" ? show() : hide() };
+  closeBtn.addEventListener("click", hide);
+  panel.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      hide();
     }
+  });
+  let drag;
+  moveBtn.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    const rect = host.getBoundingClientRect();
+    drag = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+    moveBtn.setPointerCapture(event.pointerId);
+  });
+  moveBtn.addEventListener("pointermove", (event) => {
+    if (drag) position(drag.left + event.clientX - drag.x, drag.top + event.clientY - drag.y);
+  });
+  moveBtn.addEventListener("pointerup", () => { drag = null; });
+  moveBtn.addEventListener("pointercancel", () => { drag = null; });
+  moveBtn.addEventListener("keydown", (event) => {
+    const offset = { ArrowLeft: [-20, 0], ArrowRight: [20, 0], ArrowUp: [0, -20], ArrowDown: [0, 20] }[event.key];
+    if (!offset) return;
+    event.preventDefault();
+    const rect = host.getBoundingClientRect();
+    position(rect.left + offset[0], rect.top + offset[1]);
+  });
+  window.addEventListener("resize", clamp);
+  new ResizeObserver(clamp).observe(panel);
 
-    // ── Overlay logic ────────────────────────────────────────────────
-
-    function applyOverlay(result) {
-      const colorMap = {
-        ok:           { border: "#22c55e", label: "OK" },
-        redirect:     { border: "#f59e0b", label: "3xx" },
-        client_error: { border: "#ef4444", label: String(result.status || "4xx") },
-        server_error: { border: "#ef4444", label: String(result.status || "5xx") },
-        timeout:      { border: "#6b7280", label: "Timeout" },
-        error:        { border: "#6b7280", label: result.statusText || "Error" },
-        skipped:      { border: "#d1d5db", label: "Skip" }
-      };
-
-      const style = colorMap[result.category] || colorMap.error;
-
-      getPageAnchors().forEach((anchor) => {
-        if (anchor.href === result.url) {
-          anchor.style.outline = `2px solid ${style.border}`;
-          anchor.style.outlineOffset = "2px";
-          anchor.classList.add("checklinks-checked");
-
-          if (!anchor.querySelector(".checklinks-badge")) {
-            const badge = document.createElement("span");
-            badge.className = "checklinks-badge";
-            badge.textContent = style.label;
-            badge.style.cssText = [
-              `background:${style.border}`,
-              "color:#fff",
-              "font-size:10px",
-              "padding:1px 4px",
-              "border-radius:3px",
-              "margin-left:4px",
-              "font-family:monospace",
-              "vertical-align:middle",
-              "display:inline",
-              "pointer-events:none",
-              "line-height:normal"
-            ].join(";");
-            anchor.appendChild(badge);
-          }
-        }
-      });
+  function group(result) {
+    if (["client_error", "server_error"].includes(result.category)) return "broken";
+    if (["ok", "redirect"].includes(result.category)) return result.category;
+    return "other";
+  }
+  function resultLabel(result) {
+    if (result.category === "redirect") return "Redirect → " + (result.status || result.statusText);
+    if (result.category === "unverified") return result.statusText + " · " + result.status;
+    if (result.category === "skipped") return "Skipped";
+    return result.status ? result.status + " " + (result.statusText || "") : result.statusText || "Error";
+  }
+  function refresh() {
+    const counts = { ok: 0, redirect: 0, broken: 0, other: 0 };
+    let visible = 0;
+    for (const result of results.values()) {
+      const category = group(result);
+      counts[category]++;
+      const row = rows.get(result.url);
+      row.hidden = Boolean(activeFilter && activeFilter !== category);
+      if (!row.hidden) visible++;
     }
-
-    function clearOverlays() {
-      document.querySelectorAll(".checklinks-checked").forEach((el) => {
-        el.style.outline = "";
-        el.style.outlineOffset = "";
-        el.classList.remove("checklinks-checked");
-      });
-      document.querySelectorAll(".checklinks-badge").forEach((el) => el.remove());
+    for (const filter of filters) {
+      filter.count.textContent = filter.key ? counts[filter.key] : results.size;
+      filter.el.setAttribute("aria-pressed", String(activeFilter === filter.key));
     }
-
-    function clearAll() {
-      clearOverlays();
-      allResults = [];
-      activeFilter = null;
-      updateFilterHighlight();
-      resultsList.innerHTML = "";
-      summary.style.display = "none";
-      progressBar.style.display = "none";
-      clearBtn.disabled = true;
-      exportBtn.disabled = true;
-      statusEl.textContent = "Cleared. Click Scan to re-check.";
-    }
-
-    // ── Scroll-to-link + highlight ──────────────────────────────────
-
-    function scrollToLink(url) {
-      // Remove any previous pulse
-      document.querySelectorAll(".checklinks-pulse").forEach((el) => {
-        el.classList.remove("checklinks-pulse");
-      });
-
-      // Find the first matching anchor on the page
-      const anchors = getPageAnchors();
-      for (const anchor of anchors) {
-        if (anchor.href === url) {
-          anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-          anchor.classList.add("checklinks-pulse");
-          // Remove the pulse class after the animation completes (0.8s × 5 iterations)
-          setTimeout(() => anchor.classList.remove("checklinks-pulse"), 4000);
-          return;
-        }
+    summary.hidden = !results.size && !activeScanId;
+    progress.hidden = !activeScanId;
+    progress.max = Math.max(1, total);
+    progress.value = Math.min(checked, total);
+    scanBtn.disabled = Boolean(activeScanId);
+    stopBtn.hidden = !activeScanId;
+    clearBtn.disabled = !results.size && !activeScanId;
+    exportBtn.disabled = !results.size;
+    empty.hidden = Boolean(visible);
+    empty.textContent = activeFilter ? "No results in this category." : activeScanId ? "Checking links…" : "No results. Select Scan Page to check the links currently on this page.";
+    clamp();
+  }
+  function addResult(result) {
+    if (!entries.has(result.url) || results.has(result.url)) return;
+    results.set(result.url, result);
+    const entry = entries.get(result.url);
+    const row = element("li", "result " + group(result));
+    const heading = element("div", "result-heading");
+    const url = element("span", "url", result.url);
+    url.title = result.url;
+    heading.append(url, element("span", "result-status", resultLabel(result)));
+    const text = entry.text || "Link without text";
+    const caption = element("p", "caption", text + (entry.anchors.length > 1 ? ` · ${entry.anchors.length} occurrences` : ""));
+    const actions = element("div", "result-actions");
+    const jump = button("Show on page", "text-button");
+    jump.addEventListener("click", () => {
+      const anchor = entry.anchors.find((item) => item.isConnected);
+      if (!anchor) {
+        status.textContent = "This link is no longer on the page. Select Scan Page to refresh the report.";
+        return;
       }
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      anchor.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth", block: "center" });
+      anchor.focus({ preventScroll: true });
+    });
+    const details = element("details", "details");
+    details.append(element("summary", "", "Details"), element("p", "full-url", result.url));
+    if (result.redirectedTo) details.append(element("p", "", "Final URL: " + result.redirectedTo));
+    if (result.errorDetail) details.append(element("p", "", result.errorDetail));
+    if (entry.http) {
+      const open = element("a", "", "Open destination in a new tab");
+      open.href = result.url;
+      open.target = "_blank";
+      open.rel = "noopener noreferrer";
+      details.append(open);
     }
-
-    // ── Filter helpers ───────────────────────────────────────────────
-
-    const filterCategories = {
-      ok: ["ok"],
-      redirect: ["redirect"],
-      broken: ["client_error", "server_error"],
-      other: ["error", "timeout", "skipped"]
-    };
-
-    function matchesFilter(r) {
-      if (!activeFilter) return true;
-      const cats = filterCategories[activeFilter];
-      return cats && cats.includes(r.category);
-    }
-
-    // ── Panel rendering ──────────────────────────────────────────────
-
-    function renderResults(results) {
-      const order = {
-        client_error: 0, server_error: 1, error: 2,
-        timeout: 3, redirect: 4, ok: 5, skipped: 6
-      };
-
-      const filtered = results.filter(matchesFilter);
-
-      const sorted = [...filtered].sort(
-        (a, b) => (order[a.category] ?? 7) - (order[b.category] ?? 7)
-      );
-
-      resultsList.innerHTML = "";
-
-      for (const r of sorted) {
-        const li = document.createElement("li");
-        li.style.cursor = "pointer";
-
-        let tooltip = r.url;
-        if (r.redirectedTo) tooltip += "\n\u2192 " + r.redirectedTo;
-        if (r.errorDetail) tooltip += "\n\u26A0 " + r.errorDetail;
-        tooltip += "\nClick to scroll to this link on the page";
-        li.title = tooltip;
-
-        // Click to scroll to the link on the page
-        li.addEventListener("click", () => scrollToLink(r.url));
-
-        const dot = document.createElement("span");
-        dot.className = "checklinks-dot checklinks-dot-" + r.category;
-
-        const textCol = document.createElement("span");
-        textCol.className = "checklinks-result-text";
-
-        const url = document.createElement("span");
-        url.className = "checklinks-result-url";
-        url.textContent = r.url;
-        textCol.appendChild(url);
-
-        if (r.errorDetail) {
-          const detail = document.createElement("span");
-          detail.className = "checklinks-result-detail";
-          detail.textContent = r.errorDetail;
-          textCol.appendChild(detail);
-        }
-
-        const status = document.createElement("span");
-        status.className = "checklinks-result-status";
-        status.textContent = formatStatus(r);
-
-        li.appendChild(dot);
-        li.appendChild(textCol);
-        li.appendChild(status);
-        resultsList.appendChild(li);
-      }
-    }
-
-    function formatStatus(r) {
-      if (r.category === "skipped") return "Skip";
-      if (r.category === "timeout") return "Timeout";
-      if (r.category === "error") return r.statusText || "Error";
-      if (r.status) return String(r.status);
-      return r.statusText || "?";
-    }
-
-    function updateSummary(results) {
-      let ok = 0, redirect = 0, broken = 0, other = 0;
-      for (const r of results) {
-        switch (r.category) {
-          case "ok": ok++; break;
-          case "redirect": redirect++; break;
-          case "client_error":
-          case "server_error": broken++; break;
-          default: other++; break;
-        }
-      }
-      statOk.num.textContent = ok;
-      statRedirect.num.textContent = redirect;
-      statBroken.num.textContent = broken;
-      statOther.num.textContent = other;
-      statTotal.num.textContent = results.length;
-    }
-
-    function updateProgress(checked, total) {
-      if (total === 0) return;
-      const pct = Math.round((checked / total) * 100);
-      progressFill.style.width = pct + "%";
-    }
-
-    function exportCSV() {
-      if (allResults.length === 0) return;
-
-      const header = "URL,Status,Category,Status Text,Redirected To";
-      const rows = allResults.map((r) =>
-        [
-          csvEscape(r.url),
-          r.status || "",
-          r.category,
-          csvEscape(r.statusText || ""),
-          csvEscape(r.redirectedTo || "")
-        ].join(",")
-      );
-
-      const csv = [header, ...rows].join("\n");
-      const blob = new Blob([csv], { type: "text/csv" });
-      const csvUrl = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = csvUrl;
-      a.download = "checklinks-report.csv";
-      a.click();
-      URL.revokeObjectURL(csvUrl);
-    }
-
-    function csvEscape(str) {
-      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
+    actions.append(jump, details);
+    row.append(heading, caption, actions);
+    rows.set(result.url, row);
+    // Insert by priority without rebuilding focused buttons or open details.
+    const priority = { client_error: 0, server_error: 0, error: 1, timeout: 1, unverified: 1, redirect: 2, ok: 3, skipped: 4 };
+    const rank = priority[result.category] ?? 1;
+    const before = Array.from(list.children).find((item) => Number(item.dataset.priority) > rank);
+    row.dataset.priority = rank;
+    list.insertBefore(row, before || null);
+    applyOverlay(result, entry);
+    refresh();
+  }
+  function applyOverlay(result, entry) {
+    const color = { ok: "#166534", redirect: "#92400e", broken: "#b91c1c", other: "#475569" }[group(result)];
+    for (const anchor of entry.anchors) {
+      if (!anchor.isConnected) continue;
+      const saved = ["outline", "outline-offset"].map((name) => ({ name, value: anchor.style.getPropertyValue(name), priority: anchor.style.getPropertyPriority(name) }));
+      anchor.style.setProperty("outline", `2px solid ${color}`);
+      anchor.style.setProperty("outline-offset", "2px");
+      const applied = saved.map(({ name }) => anchor.style.getPropertyValue(name));
+      const label = group(result) === "broken" ? String(result.status) : result.category === "redirect" ? "Redirect" : result.category === "ok" ? "OK" : result.category === "skipped" ? "Skip" : result.statusText || String(result.status);
+      const badge = element("span", "checklinks-badge", label);
+      badge.setAttribute("aria-hidden", "true");
+      const badgeStyle = { all: "initial", background: color, color: "#fff", "font-size": "10px", padding: "1px 4px", "border-radius": "3px", "margin-left": "4px", "font-family": "system-ui,sans-serif", "vertical-align": "middle", display: "inline", "pointer-events": "none", "line-height": "normal" };
+      for (const [name, value] of Object.entries(badgeStyle)) badge.style.setProperty(name, value, "important");
+      anchor.append(badge);
+      overlays.set(anchor, { saved, applied, badge });
     }
   }
+  function clearOverlays() {
+    for (const [anchor, { saved, applied, badge }] of overlays) {
+      saved.forEach(({ name, value, priority }, i) => {
+        // Avoid undoing a site's own subsequent style change.
+        if (anchor.style.getPropertyValue(name) !== applied[i]) return;
+        if (value) anchor.style.setProperty(name, value, priority);
+        else anchor.style.removeProperty(name);
+      });
+      badge.remove();
+    }
+    overlays.clear();
+  }
+  function cancelRequest(scanId) {
+    if (!scanId) return;
+    try { Promise.resolve(chrome.runtime.sendMessage({ type: "STOP_SCAN", scanId })).catch(() => {}); } catch (_) { /* An updated extension has already discarded this scan. */ }
+  }
+  function finish(text, state = "complete") {
+    activeScanId = null;
+    clearTimeout(watchdog);
+    reportState = state;
+    status.textContent = text;
+    refresh();
+  }
+  function armWatchdog(scanId) {
+    clearTimeout(watchdog);
+    watchdog = setTimeout(() => {
+      if (activeScanId !== scanId) return;
+      finish("The scan stopped responding. Your partial results are available. Reload this page, then try again.", "interrupted");
+      cancelRequest(scanId);
+    }, 30000);
+  }
+  function stopScan() {
+    const scanId = activeScanId;
+    finish(`Stopped. ${checked} of ${total} unique HTTP URLs checked · ${skipped} skipped.`, "stopped");
+    cancelRequest(scanId);
+  }
+  function clearAll() {
+    const scanId = activeScanId;
+    activeScanId = null;
+    clearTimeout(watchdog);
+    cancelRequest(scanId);
+    clearOverlays();
+    entries.clear();
+    results.clear();
+    rows.clear();
+    list.replaceChildren();
+    activeFilter = null;
+    checked = total = skipped = 0;
+    status.textContent = "Results and highlights cleared. Select Scan Page to check again.";
+    refresh();
+  }
+  function startScan() {
+    clearAll();
+    sourcePage = location.href;
+    scannedAt = new Date().toISOString();
+    reportState = "in progress";
+    for (const anchor of document.querySelectorAll("a[href]")) {
+      if (anchor.closest("#checklinks-panel")) continue;
+      const raw = (anchor.getAttribute("href") || "").trim();
+      const url = anchor.href;
+      const http = /^https?:/i.test(url) && !raw.startsWith("#");
+      const entry = entries.get(url) || { anchors: [], text: anchor.textContent.trim() || anchor.getAttribute("aria-label") || anchor.querySelector("img")?.alt || "", http: false, reason: raw.startsWith("#") ? "In-page fragment targets are not checked." : "Only HTTP and HTTPS destinations are checked." };
+      entry.anchors.push(anchor);
+      entry.http ||= http;
+      entries.set(url, entry);
+    }
+    const links = Array.from(entries).filter(([, entry]) => entry.http).map(([url]) => url);
+    total = links.length;
+    skipped = entries.size - total;
+    // getRandomValues is also available on ordinary HTTP pages.
+    const scanId = Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) => value.toString(16)).join("-");
+    activeScanId = scanId;
+    for (const [url, entry] of entries) {
+      if (!entry.http) addResult({ url, status: 0, category: "skipped", statusText: "Skipped", errorDetail: entry.reason });
+    }
+    if (!total) {
+      finish(entries.size ? `No HTTP URLs to check · ${skipped} skipped.` : "No links found in this page's main document. Try another page, or rescan after its content loads.");
+      return;
+    }
+    status.textContent = `Checking 0 of ${total} unique HTTP URLs · ${skipped} skipped…`;
+    refresh();
+    armWatchdog(scanId);
+    try {
+      Promise.resolve(chrome.runtime.sendMessage({ type: "CHECK_LINKS", scanId, payload: { links } })).then((response) => {
+        if (activeScanId !== scanId) return;
+        if (response?.status !== "started" || response.scanId !== scanId) throw new Error("Scan did not start");
+      }).catch(() => {
+        if (activeScanId === scanId) finish("Unable to start the scan. The extension may have updated. Reload this page, then try again.", "interrupted");
+      });
+    } catch (_) {
+      finish("The extension has updated or disconnected. Reload this page to scan again.", "interrupted");
+    }
+  }
+  chrome.runtime.onMessage.addListener((message) => {
+    if (!activeScanId || message.scanId !== activeScanId) return;
+    if (message.type === "LINK_RESULT" && entries.get(message.payload?.url)?.http && !results.has(message.payload.url)) {
+      checked++;
+      addResult(message.payload);
+      status.textContent = `Checking ${checked} of ${total} unique HTTP URLs · ${skipped} skipped…`;
+      armWatchdog(activeScanId);
+    }
+    if (message.type === "SCAN_COMPLETE") {
+      finish(`Done. ${checked} of ${total} unique HTTP URLs checked · ${skipped} skipped.`);
+    }
+  });
+
+  function csvEscape(value) {
+    let str = String(value ?? "");
+    // Page-controlled text must remain data when opened in a spreadsheet.
+    if (/^[\s]*[=+\-@]/.test(str) || /^[\t\r\n]/.test(str)) str = "'" + str;
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  function exportCSV() {
+    const header = ["Source page", "Scanned at", "Scan state", "URL", "Link text", "Occurrences", "Status", "Category", "Status Text", "Redirected To", "Details"];
+    const lines = Array.from(results.values(), (result) => [sourcePage, scannedAt, reportState, result.url, entries.get(result.url)?.text, entries.get(result.url)?.anchors.length, result.status || "", result.category, result.statusText, result.redirectedTo, result.errorDetail].map(csvEscape).join(","));
+    const blob = new Blob([[header.join(","), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = element("a");
+    link.href = url;
+    link.download = "checklinks-report.csv";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  scanBtn.addEventListener("click", startScan);
+  stopBtn.addEventListener("click", stopScan);
+  clearBtn.addEventListener("click", clearAll);
+  exportBtn.addEventListener("click", exportCSV);
+  window.addEventListener("pagehide", () => {
+    if (!activeScanId) return;
+    const scanId = activeScanId;
+    finish("Page changed. Select Scan Page to check again.", "interrupted");
+    cancelRequest(scanId);
+  });
+  stylesheet.addEventListener("load", () => {
+    host.style.setProperty("visibility", "visible", "important");
+    position(innerWidth - 436, 16);
+    show();
+    startScan();
+  }, { once: true });
+  stylesheet.addEventListener("error", () => {
+    // Keep a useful recovery message even when an extension update invalidates
+    // the packaged stylesheet between injection and loading.
+    panel.replaceChildren(element("p", "", "CheckLinks could not load. Reload this page, then open CheckLinks again."), closeBtn);
+    panel.style.cssText = "padding:16px;background:white;color:#1e293b;font:14px/1.5 system-ui;border:1px solid #475569;";
+    host.style.setProperty("visibility", "visible", "important");
+    position(innerWidth - 436, 16);
+    show();
+  }, { once: true });
+  document.documentElement.append(host);
 })();

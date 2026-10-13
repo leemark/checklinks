@@ -1,6 +1,6 @@
 # CheckLinks Chrome Web Store presentation
 
-Prepared for the 1.0.4 listing refresh.
+Listing copy for CheckLinks 1.1.0.
 
 ## Product details
 
@@ -8,9 +8,9 @@ Prepared for the 1.0.4 listing refresh.
 
 CheckLinks – Broken Link Checker
 
-**Summary (99 characters)**
+**Summary (93 characters)**
 
-Find broken links and redirects on any webpage, highlight them in place, and export results to CSV.
+Check page links, spot broken URLs and redirects, highlight results, and export a CSV report.
 
 **Category**
 
@@ -30,42 +30,41 @@ https://leemark.github.io/checklinks/privacy.html
 
 ## Detailed description
 
-Find broken links, redirects, and network errors on the page you are viewing. CheckLinks highlights each result directly on the page and collects everything in a filterable panel, so you can spot problems in context and export a clear follow-up report.
+Check links on the page you are viewing with a focused, page-level scan. CheckLinks highlights results directly on the page and collects them in an accessible filterable panel, so you can spot problems in context and export a clear follow-up report.
 
 Built for web editors, QA testers, SEO reviewers, website owners, and developers who need a quick page-level link check without creating an account or sending scan results to a separate service.
 
 FEATURES
 
 • In-page results — See color-coded outlines and status badges beside each link.
-• Clear status groups — Distinguish working links, redirects, 4xx/5xx responses, timeouts, and network errors.
-• Filterable results panel — Focus on the result types that need attention.
-• Scroll to link — Select a result to jump to the matching link on the page.
-• CSV export — Download the scan results for QA notes, content cleanup, SEO review, or issue tracking.
-• Detailed errors — Identify DNS failures, refused connections, SSL errors, timeouts, and other network problems.
+• Clear status groups — Distinguish OK, redirects, broken responses, access or rate-limit results, timeouts, and other network results.
+• Filterable results panel — Use OK, Redirect, Broken, Other, and Total controls to focus on the result types that need attention.
+• Show on page — Jump from a result to its matching link in the current page.
+• Stop and clear — Stop keeps the partial report; Clear results removes the report and page overlays.
+• Export all CSV — Save every result regardless of the selected filter for QA notes, content cleanup, SEO review, or issue tracking.
+• Response details — See the full URL, final redirect URL and response, and a general error explanation when available.
 • Lightweight — Plain JavaScript with no external dependencies.
 
 HOW TO USE
 
-1. Open the webpage you want to check.
-2. Select the CheckLinks toolbar icon to start the scan.
-3. Review, filter, and export the results from the floating panel.
+1. Open the webpage you want to check. If needed, pin CheckLinks from Chrome's Extensions menu (the puzzle-piece icon).
+2. Select the CheckLinks toolbar icon once to start the scan. Later toolbar selections show or hide the panel.
+3. Use Scan Page to rescan, review the filters and results, select Show on page, and use Stop, Clear results, or Export all CSV as needed.
 
 SCOPE
 
-CheckLinks checks links on the single page currently open in your active tab. It does not crawl an entire website.
+CheckLinks checks unique HTTP/HTTPS links in the current page's main document at scan time. Duplicate occurrences are grouped. Fragment-only links and `mailto:`, `tel:`, and `javascript:` links are skipped and not tested. Frames, shadow roots, and links added later are outside that scan; use Scan Page again. It does not crawl an entire website.
 
 PRIVACY AND PERMISSIONS
 
-CheckLinks has no accounts, analytics, or tracking. It does not collect, store, or send scan results to the developer or an analytics service. Link-check requests go directly from your browser to the linked websites.
+CheckLinks has no accounts, telemetry, analytics, tracking, or third-party processing backend. It does not collect or send scan results to the developer. Link-check requests go directly from your browser to the linked websites, which may receive normal request information under their own policies. The visible report is held in memory; Clear results removes the visible report and overlays, and a new scan or navigation replaces the current in-memory scan state. Nothing is written to persistent storage; a CSV saved locally may contain the page URL and link text.
 
-The extension uses activeTab and scripting only after you select its toolbar icon, so it can read links and display results on the current page. It uses host access to check destinations across domains. Scan results remain in memory for the current page and are not persisted. A small optional Chrome Web Store review link sits at the bottom of the panel and is not tracked by the extension.
+The extension uses activeTab and scripting after you select its toolbar icon, so it can read links and display results on the current page. Chrome grants broad website access so the extension can check destinations across domains; a page scan runs only when you activate it by clicking the toolbar icon. Chrome-controlled pages and the Chrome Web Store do not allow injection. A small optional Chrome Web Store review link sits at the bottom of the panel and is not tracked by the extension.
 
 ## Screenshot order
 
 1. Find broken links right on the page.
-2. Click once and watch results appear.
-3. Filter results and jump to the exact link.
-4. Distinguish timeouts and network errors.
-5. Export a clean CSV report.
-
-The capture fixture in `capture/` provides deterministic 200, redirect, 404, 500, timeout, and skipped-link states, plus a reproducible 1200×630 social card. It is development-only and is not included in the extension package.
+2. Filter broken responses and locate the affected links.
+3. Inspect a redirect's final destination and response.
+4. Read timeout details and distinguish skipped links.
+5. Review working links with the complete CSV export available.

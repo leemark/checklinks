@@ -482,12 +482,17 @@ figure.content-card { margin-right: 0; margin-left: 0; }
 .limitation-list li { margin-bottom: 0.6rem; }
 
 .related-guides {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
   padding: 1.35rem 1.5rem;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
-.related-guides h2 { margin-top: 0; }
+.related-guides h2 { margin: 0; }
+.related-guides a { display: block; }
 .related-guides ul { margin-bottom: 0; }
 
 .support-grid {
@@ -509,7 +514,7 @@ figure.content-card { margin-right: 0; margin-left: 0; }
   width: min(calc(100% - 2rem), var(--max));
   margin: 0 auto;
   padding: 1.7rem 0;
-  color: #777f8c;
+  color: #9fa8b7;
   font-size: 0.86rem;
 }
 

@@ -1,20 +1,20 @@
 # CheckLinks
 
-A Chrome extension that checks all hyperlinks on a web page for broken links. Click the extension icon to scan the current page — broken links are highlighted directly on the page and results are shown in a floating, draggable panel.
+A Chrome extension that checks links on the page you are viewing. Click the extension icon to start a scan — results are highlighted directly on the page and collected in a floating panel.
 
 ## Features
 
 - **Inline overlays** — links are outlined and badged with their status directly on the page
-  - Green: working (2xx)
-  - Amber: redirect (3xx)
-  - Red: broken (4xx/5xx)
-  - Gray: timeout or network error
-- **Floating results panel** — draggable, closeable panel with sorted results list, summary counts, and progress bar. Stays open until you close it and can be moved out of the way.
-- **Filter & scroll-to** — filter results by status category and click any result to scroll directly to the link on the page
-- **Detailed error reporting** — network errors are classified (DNS failure, connection refused, SSL error, timeout, etc.) with explanations shown in the results
-- **CSV export** — download scan results as a CSV file
+  - Green: OK (2xx)
+  - Amber: redirect (the request reached another URL)
+  - Red: broken (most 4xx/5xx responses)
+  - Gray: Other, including access, rate-limit, timeout, and network results
+- **Floating results panel** — a responsive, draggable panel with accessible status filters, summary counts, and progress. The first toolbar click starts a scan; later toolbar clicks show or hide the panel.
+- **Filter & show on page** — filter by OK, Redirect, Broken, Other, or Total, then use **Show on page** to jump to a matching link.
+- **Clear and stop controls** — **Stop** cancels an active scan while retaining its partial report. **Clear results** removes the report and its page overlays.
+- **CSV export** — **Export all CSV** saves every result, regardless of the selected filter; a stopped scan exports the partial report.
 - **Respectful review request** — a small optional review link sits quietly at the bottom of the panel. It never interrupts a scan and records no activity data.
-- **Throttled requests** — checks 3 links concurrently with delays between requests using HEAD (with GET fallback) to avoid overwhelming servers
+- **Throttled requests** — checks unique HTTP/HTTPS destinations concurrently with delays between requests, using HEAD with GET fallback for 403, 405, and 999 responses
 - **Lightweight** — plain JavaScript, no build step, no dependencies
 
 ## Installation
@@ -38,33 +38,32 @@ https://chromewebstore.google.com/detail/checklinks/chhcilocdjapdojciijkeghifjdi
 
 ## Usage
 
-1. Navigate to any web page
-2. Click the CheckLinks icon in the toolbar — a floating panel appears and scanning starts automatically
-3. Links on the page will be highlighted with colored outlines and status badges as results come in
-4. The panel shows a summary with counts and a scrollable, sorted list of results
-5. Drag the panel by its header to move it out of the way
-6. Click **Export CSV** to download the results
-7. Click **Clear** to remove all overlays from the page
-8. Click **X** to close the panel (click the icon again to reopen it)
+1. Navigate to a normal `http://` or `https://` webpage. If CheckLinks is not pinned, open Chrome's Extensions menu (the puzzle-piece icon), find CheckLinks, and select the pin control so it stays in the toolbar.
+2. Click the CheckLinks toolbar icon once. The panel appears and the scan starts automatically. On later toolbar clicks, the panel is shown or hidden.
+3. Use **Scan Page** to start a new scan of the current main document. The scan reads links present at that moment; links added later require another scan.
+4. Links on the page are highlighted as results arrive. Duplicate occurrences of the same HTTP/HTTPS URL are grouped; fragment-only links and `mailto:`, `tel:`, and `javascript:` links are skipped and not tested.
+5. Use the **OK**, **Redirect**, **Broken**, **Other**, and **Total** buttons to filter. Each result includes its full URL, response details, any final redirect URL, and an error explanation when available. Select **Show on page** to jump to the link.
+6. Drag the panel by its header to move it out of the way. **Stop** cancels the active scan and retains the partial report.
+7. Click **Export all CSV** to save every current result, even while a filter is selected. The local CSV may include the page URL and link text.
+8. Click **Clear results** to remove the report and all page overlays.
 
 ## How It Works
 
 The extension uses Chrome's Manifest V3 architecture:
 
-- **Content script** (`content.js`) is injected on demand into the active tab when you click the icon. It scrapes all `<a>` elements, builds the floating results panel, and applies colored overlays as results arrive.
-- **Service worker** (`background.js`) receives the list of URLs and checks each one via `fetch` HEAD requests (with GET fallback for servers that reject HEAD or return 403). Requests run with a concurrency limit of 3, a 250ms delay between requests, and a 10-second timeout per request.
+- **Content script** (`content.js`) is injected on demand into the active tab when you click the icon. It reads anchors in the current main document, groups duplicate HTTP/HTTPS destinations, builds the floating results panel, and applies colored overlays as results arrive. It does not scan frames or shadow roots, and links added after collection require a rescan.
+- **Service worker** (`background.js`) checks each unique destination with `fetch`, following redirects and showing the final response and final URL in the result. It uses HEAD first, then GET for 403, 405, or 999 responses, omits credentials, limits concurrency to 3, spaces requests by 250ms, and times out each request after 10 seconds.
 
 ### Link Status Categories
 
-| Category     | HTTP Status        | Color | Badge     |
-|--------------|--------------------|-------|-----------|
-| OK           | 200–299            | Green | OK        |
-| Redirect     | 301, 302, 307, 308| Amber | 3xx       |
-| Client Error | 400–499            | Red   | Status code |
-| Server Error | 500–599            | Red   | Status code |
-| Timeout      | —                  | Gray  | Timeout   |
-| Network Error| —                  | Gray  | Error     |
-| Skipped      | mailto, tel, etc.  | Light gray | Skip |
+| Category | Typical result | Color | Meaning |
+|----------|----------------|-------|---------|
+| OK | 2xx | Green | The destination returned a successful response. |
+| Redirect | Followed redirect | Amber | The request ended at another URL; the row shows the final response. |
+| Broken | Most 4xx/5xx | Red | The destination returned an HTTP error. 401 and 403 are reported as **Needs access** under Other. |
+| Other | 401/403, 429, blocked, timeout, network error, or skipped | Gray | The result is unverified or was not tested. 429 is **Rate limited** and is not necessarily broken. |
+
+Network failures use a general error description. CheckLinks does not promise to identify a precise DNS, TLS, or connection-refused cause from a browser fetch failure.
 
 ## Project Structure
 
@@ -74,7 +73,7 @@ checklinks/
     manifest.json    # Chrome extension manifest (Manifest V3)
     background.js    # Service worker — link checking engine
     content.js       # Content script — link scraping, results panel, and overlays
-    content.css      # Panel and overlay styles
+    content.css      # Isolated panel styles
     icons/           # Extension icons (16/32/48/128px)
   docs/
     index.html       # Landing page (GitHub Pages)
@@ -97,9 +96,11 @@ The **Release** workflow then checks that the tag matches the manifest version, 
 
 ## Permissions
 
-- **activeTab** — access to the current tab only when you click the icon
+- **activeTab** — lets CheckLinks read the current page after you click the toolbar icon.
 - **scripting** — inject the content script on demand
 - **host_permissions (`<all_urls>`)** — required so the service worker can make HTTP requests to check links on any domain
+
+Link-check requests go directly from your browser to the destination websites. Chrome grants broad website access so the extension can check destinations across domains; a page scan runs only when you activate it by clicking the toolbar icon. CheckLinks has no telemetry, collection, account, or third-party processing backend. The visible report is held in memory; **Clear results** removes the visible report and overlays, and a new scan or navigation replaces the current in-memory scan state. Nothing is written to persistent storage, and a CSV saved locally can contain the source page URL and link text. Chrome-controlled pages such as `chrome://` pages and the Chrome Web Store do not allow injection; when injection is blocked, CheckLinks provides best-effort toolbar badge and title feedback.
 
 ## Links
 

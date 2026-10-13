@@ -23,23 +23,24 @@
   <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <nav class="site-nav" aria-label="Primary navigation">
     <div class="nav-inner">
       <a class="brand-link" href="index.html" aria-label="CheckLinks home"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
-        <li><a href="broken-link-qa-after-website-migration.html" aria-current="page">Guides</a></li>
+        <li><a href="index.html#guides" aria-current="page">Guides</a></li>
         <li><a href="support.html">Support</a></li>
       </ul>
     </div>
   </nav>
 
-  <main class="page-shell">
+  <main id="main-content" class="page-shell">
     <article>
       <header class="article-header">
         <p class="eyebrow">Migration QA · CheckLinks guide</p>
         <h1>Broken-Link QA After a Website Migration</h1>
-        <p class="article-meta">By Mark Lee · <time datetime="2026-09-01">Updated September 1, 2026</time></p>
+        <p class="article-meta">By Mark Lee</p>
         <p class="direct-answer"><strong>Short answer:</strong> Start with an old-to-new URL map, scan representative pages on the migrated site with CheckLinks, and use <strong>Broken</strong>, <strong>Redirect</strong>, and <strong>Other</strong> to triage what the new page actually exposes. Export the findings for handoff, then run separate server and search-engine checks for the migration's full URL and SEO behavior.</p>
       </header>
 
@@ -48,15 +49,15 @@
         <ol class="steps">
           <li><strong>Build the map first.</strong> Keep the old URL, intended new URL, migration status, and owner in a working inventory. Mark whether each old URL should redirect, disappear, or remain unchanged. This map is what lets you judge a redirect instead of treating every 3xx as a defect.</li>
           <li><strong>Choose representative templates.</strong> On the new host, open the homepage, global navigation and footer, a listing page, a detail or article page, a search or utility page, and a document/PDF landing page when those patterns exist. Include a few migrated pages with historically deep links or unusual query strings.</li>
-          <li><strong>Scan each rendered page.</strong> Click the CheckLinks icon and let the panel finish. Choose <strong>Broken</strong> to find 4xx/5xx destinations still embedded in new content. Choose <strong>Redirect</strong> to compare the followed target with the old-to-new map. Choose <strong>Other</strong> to isolate timeouts, network errors, and skipped links for a second pass.</li>
-          <li><strong>Fix internal sources, not just symptoms.</strong> Click a result to jump to the exact anchor on the page. An intentional old-to-new redirect may be correct for an external visitor, but an internal link that still points at the old path is usually stale: update it to the final destination and avoid adding an unnecessary hop.</li>
-          <li><strong>Re-scan and hand off.</strong> Re-run the page after fixes are live in the same environment. Export CSV and attach it to the migration ticket with the URL map, the sampled templates, and notes for any accepted redirect or transient failure.</li>
+          <li><strong>Scan each rendered page.</strong> Click the CheckLinks icon and let the panel finish. Choose <strong>Broken</strong> to find most 4xx/5xx destinations still embedded in new content. Choose <strong>Redirect</strong> to compare the final response and URL with the old-to-new map. Choose <strong>Other</strong> to isolate Needs access, Rate limited, timeouts, network errors, and skipped links for a second pass.</li>
+          <li><strong>Fix internal sources, not just symptoms.</strong> Select a result's <strong>Show on page</strong> control to jump to the exact anchor. An intentional old-to-new redirect may be correct for an external visitor, but an internal link that still points at the old path is usually stale: update it to the final destination and avoid adding an unnecessary hop.</li>
+          <li><strong>Re-scan and hand off.</strong> Re-run the page after fixes are live in the same environment. <strong>Export all CSV</strong> includes every current result, even when a filter is selected; attach it to the migration ticket with the URL map, the sampled templates, and notes for any accepted redirect or transient failure.</li>
         </ol>
       </section>
 
       <figure class="content-card">
         <img class="screenshot" src="images/checklinks-filter-broken.jpg" alt="CheckLinks panel with the Broken filter selected and failed links listed" loading="lazy">
-        <figcaption class="caption">The Broken filter narrows the rendered page's results to 4xx and 5xx responses, making stale internal paths easier to inspect and fix in context.</figcaption>
+        <figcaption class="caption">The Broken filter narrows the rendered page's results to most 4xx and 5xx responses, making stale internal paths easier to inspect and fix in context.</figcaption>
       </figure>
 
       <section class="content-card">
@@ -74,10 +75,10 @@
       <aside class="callout">
         <h2>Keep the evidence honest</h2>
         <ul class="limitation-list">
-          <li>CheckLinks checks anchors on the current rendered page. It does not crawl the whole migrated site, inspect orphaned URLs, or certify that every old URL has been handled.</li>
+          <li>CheckLinks checks unique HTTP/HTTPS anchors in the current main document. Duplicate occurrences are grouped; frames, shadow roots, and links added after collection require separate coverage or a rescan.</li>
           <li>Its request omits credentials, so private routes, preview access, session-dependent content, and WAF or bot challenges need verification through the migration's authenticated or server-side tooling.</li>
           <li>A redirect result says that a request followed a redirect; it does not know whether that redirect was intentional. Compare it with the old-to-new map and check the source of internal links.</li>
-          <li>Timeouts and network failures can be transient. Re-scan or verify with an independent request before escalating, and do not turn this workflow into an SEO guarantee.</li>
+          <li>Timeouts and generic network failures can be transient. Re-scan or verify with an independent request before escalating, and do not turn this workflow into an SEO guarantee.</li>
         </ul>
       </aside>
 

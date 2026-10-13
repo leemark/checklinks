@@ -23,34 +23,35 @@
   <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <nav class="site-nav" aria-label="Primary navigation">
     <div class="nav-inner">
       <a class="brand-link" href="index.html" aria-label="CheckLinks home"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
-        <li><a href="how-to-check-links-before-publishing.html" aria-current="page">Guides</a></li>
+        <li><a href="index.html#guides" aria-current="page">Guides</a></li>
         <li><a href="support.html">Support</a></li>
       </ul>
     </div>
   </nav>
 
-  <main class="page-shell">
+  <main id="main-content" class="page-shell">
     <article>
       <header class="article-header">
         <p class="eyebrow">Publishing QA · CheckLinks guide</p>
         <h1>How to Check Links Before Publishing</h1>
-        <p class="article-meta">By Mark Lee · <time datetime="2026-09-01">Updated September 1, 2026</time></p>
+        <p class="article-meta">By Mark Lee</p>
         <p class="direct-answer"><strong>Short answer:</strong> Open the staging or draft page in Chrome, run CheckLinks, filter <strong>Broken</strong>, <strong>Redirect</strong>, and <strong>Other</strong>, jump to each flagged link, fix the source, re-scan, and export the final CSV. This is page-level evidence, not a full-site crawl.</p>
       </header>
 
       <section class="content-card">
         <h2>Short demonstration: a pre-publish pass</h2>
         <ol class="steps">
-          <li><strong>Scan the version you are about to ship.</strong> Load the staging URL or draft preview as a reviewer would see it, then click the CheckLinks toolbar icon. The extension reads the page's <code>&lt;a href&gt;</code> links and shows status outlines in context while the floating results panel fills in.</li>
-          <li><strong>Triage by the panel's summary.</strong> Select <strong>Broken</strong> for 4xx and 5xx responses. Select <strong>Redirect</strong> to inspect links that resolve through a redirect. Select <strong>Other</strong> for network errors, timeouts, skipped fragment links, and non-HTTP schemes such as <code>mailto:</code> or <code>tel:</code>.</li>
-          <li><strong>Use click-to-jump for the fix.</strong> Click a result in the panel to scroll to the matching link on the page. Check the surrounding sentence, then correct the URL in the CMS, Markdown, template, or component that produced it. A valid response does not make an incorrect destination or misleading anchor text good.</li>
+          <li><strong>Scan the version you are about to ship.</strong> Load the staging URL or draft preview as a reviewer would see it, then click the CheckLinks toolbar icon. The first click starts a scan; later clicks show or hide the panel. If the icon is hidden, open Chrome's Extensions menu and pin CheckLinks. The scan reads the page's main-document <code>&lt;a href&gt;</code> links and shows status outlines in context while the panel fills in.</li>
+          <li><strong>Triage by the panel's summary.</strong> Select <strong>Broken</strong> for most 4xx and 5xx responses. Select <strong>Redirect</strong> to inspect links that resolve through a redirect; the result shows the final response and final URL. Select <strong>Other</strong> for Needs access, Rate limited, timeouts, network errors, and skipped links. 401/403/429 results are unverified and are not necessarily broken.</li>
+          <li><strong>Use Show on page for the fix.</strong> Select a result's <strong>Show on page</strong> control to scroll to the matching link. Check the surrounding sentence, then correct the URL in the CMS, Markdown, template, or component that produced it. A valid response does not make an incorrect destination or misleading anchor text good.</li>
           <li><strong>Re-scan the corrected page.</strong> Run a fresh scan after the edits are present in the same staging or preview environment. Work from the new result set so a previously captured failure does not get mistaken for current evidence.</li>
-          <li><strong>Export the handoff.</strong> When the remaining findings are understood, click <strong>Export CSV</strong>. The report includes URL, status, category, status text, and a followed redirect target when one is available. Attach it to the release ticket or keep it with the editorial sign-off.</li>
+          <li><strong>Export the handoff.</strong> When the remaining findings are understood, click <strong>Export all CSV</strong>. It exports every result regardless of the selected filter, including a partial report after <strong>Stop</strong>. The local report includes full URL, response, category, status text, and final redirect URL when one is available; it may also include the page URL and link text.</li>
         </ol>
       </section>
 
@@ -68,10 +69,10 @@
       <aside class="callout">
         <h2>Limitations to record in the sign-off</h2>
         <ul class="limitation-list">
-          <li>CheckLinks scans links on the page currently open in Chrome. It does not discover every URL in a site, crawl orphaned pages, or replace a complete inventory.</li>
+          <li>CheckLinks scans unique HTTP/HTTPS links in the current main document at scan time. Duplicate occurrences are grouped. It does not inspect frames or shadow roots, and links added later require <strong>Scan Page</strong> again.</li>
           <li>Requests are made without the browser's credentials. Login-only destinations, session-dependent links, and WAF or bot protections can produce a failure even when a human can open the page; verify those separately in the intended account and environment.</li>
-          <li>Timeouts, DNS failures, and server errors can be transient. Recheck an <strong>Other</strong> result before filing a permanent defect, and preserve the CSV evidence and timestamp.</li>
-          <li>Non-HTTP links and fragment-only links are reported as skipped. Content quality, accessibility, indexability, and search ranking still need their own review.</li>
+          <li>Timeouts, generic network errors, and server responses can be transient. Recheck an <strong>Other</strong> result before filing a permanent defect; CheckLinks does not promise a precise DNS, TLS, or connection-refused diagnosis.</li>
+          <li>Non-HTTP links and fragment-only links are skipped and not tested. Content quality, accessibility, indexability, and search ranking still need their own review.</li>
         </ul>
       </aside>
 

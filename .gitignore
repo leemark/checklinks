@@ -13,3 +13,6 @@ Thumbs.db
 *.crx
 *.pem
 *.zip
+
+# Local audit evidence and isolated browser profiles
+/output/

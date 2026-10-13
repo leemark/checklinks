@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "CheckLinks – Broken Link Checker",
-  "version": "1.0.5",
-  "description": "Find broken links and redirects on any webpage, highlight them in place, and export results to CSV.",
+  "version": "1.1.0",
+  "description": "Check page links, spot broken URLs and redirects, highlight results, and export a CSV report.",
   "homepage_url": "https://leemark.github.io/checklinks/",
   "permissions": [
     "activeTab",
@@ -14,6 +14,10 @@
   "background": {
     "service_worker": "background.js"
   },
+  "web_accessible_resources": [{
+    "resources": ["content.css"],
+    "matches": ["<all_urls>"]
+  }],
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",

@@ -23,23 +23,24 @@
   <meta name="twitter:image" content="https://leemark.github.io/checklinks/images/checklinks-social-1200x630.jpg">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <nav class="site-nav" aria-label="Primary navigation">
     <div class="nav-inner">
       <a class="brand-link" href="index.html" aria-label="CheckLinks home"><img src="icon128.png" width="30" height="30" alt="">CheckLinks</a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
-        <li><a href="broken-link-checking-for-documentation-teams.html" aria-current="page">Guides</a></li>
+        <li><a href="index.html#guides" aria-current="page">Guides</a></li>
         <li><a href="support.html">Support</a></li>
       </ul>
     </div>
   </nav>
 
-  <main class="page-shell">
+  <main id="main-content" class="page-shell">
     <article>
       <header class="article-header">
         <p class="eyebrow">Documentation QA · CheckLinks guide</p>
         <h1>Broken-Link Checking for Documentation Teams</h1>
-        <p class="article-meta">By Mark Lee · <time datetime="2026-09-01">Updated September 1, 2026</time></p>
+        <p class="article-meta">By Mark Lee</p>
         <p class="direct-answer"><strong>Short answer:</strong> Treat each published documentation page as a QA unit: scan it with CheckLinks, filter the results, jump to the source link, assign the finding in your normal team tracker, fix it, re-scan, and export the evidence. This keeps link defects actionable without pretending the extension is a shared documentation workspace.</p>
       </header>
 
@@ -47,29 +48,29 @@
         <h2>Short demonstration: check one documentation page</h2>
         <ol class="steps">
           <li><strong>Choose the QA unit and owner.</strong> Put one rendered documentation page, its version or release, and its reviewer in the ticket. Include pages changed in the release plus shared navigation and high-use entry pages. Open the public or staging version in Chrome and click the CheckLinks icon.</li>
-          <li><strong>Filter by the kind of decision needed.</strong> Use <strong>Broken</strong> for a deprecated API endpoint returning 404 or a retired PDF returning 410/404. Use <strong>Redirect</strong> to identify links that still work through a moved route. Use <strong>Other</strong> for timeouts, network errors, skipped anchors, and non-HTTP links that need a human decision.</li>
-          <li><strong>Jump to the documentation context.</strong> Click a result in the panel to scroll to the matching anchor. Read the code sample, explanation, and version note around it. Decide whether to update the link, replace a retired PDF with its current guide, add a deprecation note, or remove a reference that should no longer be published.</li>
+          <li><strong>Filter by the kind of decision needed.</strong> Use <strong>Broken</strong> for a deprecated API endpoint returning most 4xx/5xx responses or a retired PDF returning 410/404. Use <strong>Redirect</strong> to identify links that still work through a moved route. Use <strong>Other</strong> for Needs access, Rate limited, timeouts, network errors, skipped anchors, and non-HTTP links that need a human decision.</li>
+          <li><strong>Jump to the documentation context.</strong> Select a result's <strong>Show on page</strong> control to scroll to the matching anchor. Read the code sample, explanation, and version note around it. Decide whether to update the link, replace a retired PDF with its current guide, add a deprecation note, or remove a reference that should no longer be published.</li>
           <li><strong>Assign outside CheckLinks.</strong> Copy the URL, category, and source-page context into the team's issue tracker or release board and assign an owner there. CheckLinks keeps scan results in the current tab; it does not persist findings, route them to teammates, or manage status transitions.</li>
-          <li><strong>Re-scan the exact page and export.</strong> After the documentation change is rendered, run a new scan and confirm the result is resolved or intentionally accepted. Export CSV for the ticket. The report gives the team a compact record of URL, status, category, status text, and followed redirect target.</li>
+          <li><strong>Re-scan the exact page and export.</strong> After the documentation change is rendered, run a new scan and confirm the result is resolved or intentionally accepted. <strong>Export all CSV</strong> for the ticket. The local report gives the team a compact record of full URL, response, category, status text, final redirect URL, and possibly page URL and link text.</li>
         </ol>
       </section>
 
       <figure class="content-card">
-        <img class="screenshot" src="images/checklinks-export.jpg" alt="CheckLinks results panel with the Export CSV control available after a scan" loading="lazy">
-        <figcaption class="caption">After the page-level pass, Export CSV provides a lightweight handoff for the issue or release record; assignment and durable history stay in the team's existing system.</figcaption>
+        <img class="screenshot" src="images/checklinks-export.jpg" alt="CheckLinks results panel with the Export all CSV control available after a scan" loading="lazy">
+        <figcaption class="caption">After the page-level pass, Export all CSV provides a lightweight handoff for the issue or release record; assignment and durable history stay in the team's existing system.</figcaption>
       </figure>
 
       <section class="content-card">
         <h2>Make the report useful to the next person</h2>
         <p>Keep the page URL, documentation version, scan date, and owner beside the CSV. Record why an intentional redirect or skipped link is accepted. For a deprecated endpoint, capture the replacement version or migration note; for a retired PDF, capture the current document's stable landing page rather than silently swapping in a guessed file.</p>
-        <p>Run the same small set of page units after navigation, API-reference, or asset-publishing changes. That gives editors and engineers a clear re-scan boundary without requiring every contributor to understand the extension's implementation.</p>
+        <p>Run the same small set of page units after navigation, API-reference, or asset-publishing changes. That gives editors and engineers a clear re-scan boundary without requiring every contributor to understand how the extension works.</p>
       </section>
 
       <aside class="callout">
         <h2>What this workflow does not provide</h2>
         <ul class="limitation-list">
           <li>Results are not persisted in a shared CheckLinks workspace. There is no built-in team assignment, scheduling, recurring monitor, or historical dashboard; use your documentation or issue system for those needs.</li>
-          <li>Coverage is limited to anchors on the open rendered page. CheckLinks does not crawl the full documentation site or discover unlinked pages, generated routes, embedded references, or every downloadable asset.</li>
+          <li>Coverage is limited to unique HTTP/HTTPS anchors in the open rendered page's main document. CheckLinks groups duplicate occurrences, does not inspect frames or shadow roots, and does not include links added after collection until you rescan.</li>
           <li>Requests omit credentials, so private docs, session-dependent API consoles, and WAF or bot-protected endpoints may need separate authenticated or server-side verification.</li>
           <li>A reachable response does not prove editorial correctness, code-sample accuracy, accessibility, version support, or search indexability. Those remain part of documentation review.</li>
         </ul>

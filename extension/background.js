@@ -1,215 +1,363 @@
-// Per-tab scan state. Keyed by tabId.
+// Per-tab scan state. A state object represents one content-script document
+// and one scan. Workers must keep this exact object before publishing results.
 const tabState = {};
-
-// Clean up state when a tab is closed
-chrome.tabs.onRemoved.addListener((tabId) => {
-  delete tabState[tabId];
-});
-
-// Clicking the extension icon injects the content script into the active tab
-chrome.action.onClicked.addListener(async (tab) => {
-  try {
-    await chrome.scripting.insertCSS({
-      target: { tabId: tab.id },
-      files: ["content.css"]
-    });
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ["content.js"]
-    });
-  } catch (_) {
-    // Cannot inject into this page (e.g. chrome:// URLs)
-  }
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "CHECK_LINKS") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return false;
-
-    // De-duplicate URLs
-    const uniqueUrls = [...new Set(message.payload.links)];
-
-    tabState[tabId] = {
-      results: new Map(),
-      scanning: true,
-      total: uniqueUrls.length,
-      cancelled: false
-    };
-
-    checkLinksWithConcurrency(tabId, uniqueUrls);
-    sendResponse({ status: "started", total: uniqueUrls.length });
-    return false;
-  }
-});
-
-async function checkLinksWithConcurrency(tabId, urls, concurrency = 3) {
-  let index = 0;
-
-  function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  async function worker() {
-    while (index < urls.length) {
-      if (tabState[tabId]?.cancelled) return;
-      const i = index++;
-      if (i >= urls.length) return;
-
-      const result = await checkSingleLink(urls[i]);
-
-      if (tabState[tabId]?.cancelled) return;
-
-      tabState[tabId].results.set(result.url, result);
-
-      // Send incremental result to content script
-      try {
-        chrome.tabs.sendMessage(tabId, {
-          type: "LINK_RESULT",
-          payload: result
-        });
-      } catch (_) {
-        // Tab may have been closed
-      }
-
-      // Pause between requests to avoid overwhelming servers
-      await delay(250);
-    }
-  }
-
-  const workers = Array.from({ length: concurrency }, () => worker());
-  await Promise.all(workers);
-
-  if (tabState[tabId]) {
-    tabState[tabId].scanning = false;
-
-    try {
-      chrome.tabs.sendMessage(tabId, { type: "SCAN_COMPLETE" });
-    } catch (_) {
-      // Tab may have been closed
-    }
-  }
-}
 
 const FETCH_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 };
 
-async function checkSingleLink(url) {
-  // Skip non-HTTP schemes
+const REQUEST_TIMEOUT_MS = 10000;
+const REQUEST_SPACING_MS = 250;
+
+// A tab can be closed while a fetch or message delivery is still pending.
+// Abort the state before deleting it so every worker observes cancellation.
+if (chrome.tabs.onRemoved) {
+  chrome.tabs.onRemoved.addListener((tabId) => {
+    const state = tabState[tabId];
+    if (!state) return;
+    cancelState(state);
+    if (tabState[tabId] === state) delete tabState[tabId];
+  });
+}
+
+// Clicking the extension icon injects only the content script. The content
+// script owns its Shadow DOM stylesheet, so no page-level CSS is injected.
+chrome.action.onClicked.addListener(async (tab) => {
+  const tabId = tab && tab.id;
+  if (typeof tabId !== "number") return;
+
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["content.js"]
+    });
+    await setActionFeedback(tabId, "", "");
+  } catch (_) {
+    await setActionFeedback(
+      tabId,
+      "!",
+      "CheckLinks works on normal webpages. Reload the page and try again."
+    );
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!message || typeof message.type !== "string") return false;
+
+  if (message.type === "CHECK_LINKS") {
+    const tabId = sender && sender.tab && sender.tab.id;
+    const scanId = message.scanId;
+    const documentId = sender && sender.documentId;
+    if (typeof tabId !== "number" || typeof scanId !== "string" || !scanId) return false;
+
+    const links = message.payload && Array.isArray(message.payload.links)
+      ? message.payload.links
+      : [];
+    const uniqueUrls = [...new Set(links)];
+    const previousState = tabState[tabId];
+    if (previousState) cancelState(previousState);
+
+    const state = {
+      results: new Map(),
+      scanning: true,
+      total: uniqueUrls.length,
+      cancelled: false,
+      scanId,
+      documentId,
+      controllers: new Set()
+    };
+    tabState[tabId] = state;
+
+    // Start the workers after recording the state. The response remains
+    // synchronous, while all later messages carry the same scan identity.
+    void checkLinksWithConcurrency(tabId, uniqueUrls, 3, state);
+    sendResponse({ status: "started", total: uniqueUrls.length, scanId });
+    return false;
+  }
+
+  if (message.type === "STOP_SCAN") {
+    const tabId = sender && sender.tab && sender.tab.id;
+    const scanId = message.scanId;
+    const documentId = sender && sender.documentId;
+    const state = typeof tabId === "number" ? tabState[tabId] : undefined;
+    if (
+      !state ||
+      typeof scanId !== "string" ||
+      state.scanId !== scanId ||
+      state.documentId !== documentId
+    ) {
+      return false;
+    }
+
+    cancelState(state);
+    if (tabState[tabId] === state) delete tabState[tabId];
+    sendResponse({ status: "stopped", scanId });
+    return false;
+  }
+
+  return false;
+});
+
+function cancelState(state) {
+  if (!state || state.cancelled) return;
+  state.cancelled = true;
+  state.scanning = false;
+  if (state.controllers) {
+    for (const controller of state.controllers) {
+      try {
+        controller.abort();
+      } catch (_) {
+        // An already-aborted controller is harmless.
+      }
+    }
+    state.controllers.clear();
+  }
+}
+
+function isCurrentState(tabId, state) {
+  return Boolean(
+    state &&
+    !state.cancelled &&
+    tabState[tabId] === state &&
+    tabState[tabId].scanId === state.scanId &&
+    tabState[tabId].documentId === state.documentId
+  );
+}
+
+async function setActionFeedback(tabId, badgeText, title) {
+  try {
+    if (chrome.action.setBadgeText) {
+      await Promise.resolve(chrome.action.setBadgeText({ tabId, text: badgeText }));
+    }
+  } catch (_) {
+    // Feedback is best effort; injection result remains the source of truth.
+  }
+  try {
+    if (chrome.action.setTitle) {
+      await Promise.resolve(chrome.action.setTitle({ tabId, title }));
+    }
+  } catch (_) {
+    // Feedback is best effort; injection result remains the source of truth.
+  }
+}
+
+async function sendScanMessage(tabId, state, message) {
+  if (!isCurrentState(tabId, state)) return false;
+
+  const options = state.documentId === undefined
+    ? undefined
+    : { documentId: state.documentId };
+
+  try {
+    const delivery = options === undefined
+      ? chrome.tabs.sendMessage(tabId, message)
+      : chrome.tabs.sendMessage(tabId, message, options);
+    await Promise.resolve(delivery);
+    return true;
+  } catch (_) {
+    // The tab or content document may have gone away between the state check
+    // and sendMessage. Cancel the job so remaining fetches are released, and
+    // guard deletion so a replacement scan survives this old rejection.
+    cancelState(state);
+    if (tabState[tabId] === state) delete tabState[tabId];
+    return false;
+  }
+}
+
+async function checkLinksWithConcurrency(tabId, urls, concurrency = 3, state = tabState[tabId]) {
+  if (!state) return;
+  let index = 0;
+
+  async function worker() {
+    while (isCurrentState(tabId, state)) {
+      const i = index++;
+      if (i >= urls.length) return;
+
+      const result = await checkSingleLink(urls[i], state);
+      if (!isCurrentState(tabId, state)) return;
+
+      state.results.set(result.url, result);
+      await sendScanMessage(tabId, state, {
+        type: "LINK_RESULT",
+        scanId: state.scanId,
+        payload: result
+      });
+      if (!isCurrentState(tabId, state)) return;
+
+      await delay(REQUEST_SPACING_MS, state);
+    }
+  }
+
+  const workerCount = Math.max(1, Math.min(concurrency, urls.length || 1));
+  const workers = Array.from({ length: workerCount }, () => worker());
+  await Promise.all(workers);
+
+  if (!isCurrentState(tabId, state)) return;
+  state.scanning = false;
+  await sendScanMessage(tabId, state, {
+    type: "SCAN_COMPLETE",
+    scanId: state.scanId
+  });
+  // Results remain in the content document for display/export. The service
+  // worker does not need to retain a parallel result map after completion.
+  if (tabState[tabId] === state) delete tabState[tabId];
+}
+
+function delay(ms, state) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    if (!state || !state.cancelled) return;
+    clearTimeout(timer);
+    resolve();
+  });
+}
+
+function registerController(state) {
+  const controller = new AbortController();
+  if (state && state.controllers) state.controllers.add(controller);
+  return controller;
+}
+
+function unregisterController(state, controller) {
+  if (state && state.controllers) state.controllers.delete(controller);
+}
+
+async function request(url, method, state) {
+  if (state && state.cancelled) {
+    const error = new Error("Scan cancelled");
+    error.name = "AbortError";
+    throw error;
+  }
+
+  const controller = registerController(state);
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: FETCH_HEADERS,
+      redirect: "follow",
+      signal: controller.signal,
+      credentials: "omit"
+    });
+
+    // Link checking uses response headers only. Release an unused GET/HEAD
+    // body so a large response is not downloaded after classification.
+    try {
+      const cancellation = response && response.body && typeof response.body.cancel === "function"
+        ? response.body.cancel()
+        : undefined;
+      if (cancellation && typeof cancellation.catch === "function") {
+        cancellation.catch(() => {});
+      }
+    } catch (_) {
+      // Some response implementations expose a non-cancellable body.
+    }
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+    unregisterController(state, controller);
+  }
+}
+
+async function checkSingleLink(url, state) {
+  // Skip non-HTTP schemes.
   if (/^(mailto:|tel:|javascript:|data:)/.test(url)) {
     return { url, status: 0, statusText: "Skipped", category: "skipped" };
   }
 
-  // Skip anchor-only (already resolved to full URL with hash, but if it's
-  // the same page with just a fragment, we don't need to fetch)
-  // This is handled by content.js marking same-page anchors
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
-
   try {
-    const response = await fetch(url, {
-      method: "HEAD",
-      headers: FETCH_HEADERS,
-      redirect: "follow",
-      signal: controller.signal,
-      credentials: "omit"
-    });
-    clearTimeout(timeoutId);
+    const response = await request(url, "HEAD", state);
 
-    // Some servers reject HEAD or block it — retry with GET
+    // Some servers reject HEAD or block it — retry with GET.
     if (response.status === 405 || response.status === 403 || response.status === 999) {
-      return await checkWithGet(url);
+      return await checkWithGet(url, state);
     }
 
-    const redirected = response.redirected;
-    const finalUrl = response.url;
-
-    // If the response followed a redirect, report it as a redirect
-    // even though the final status is 200
-    if (redirected && response.ok) {
-      return {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        category: "redirect",
-        redirectedTo: finalUrl
-      };
-    }
-
-    return {
-      url,
-      status: response.status,
-      statusText: response.statusText,
-      category: categorize(response.status),
-      redirectedTo: redirected ? finalUrl : null
-    };
+    return resultFromResponse(url, response);
   } catch (err) {
-    clearTimeout(timeoutId);
-    if (err.name === "AbortError") {
-      return { url, status: 0, statusText: "Timeout", errorDetail: "Request timed out after 10 seconds", category: "timeout" };
-    }
-    const { reason, detail } = classifyNetworkError(err);
-    return { url, status: 0, statusText: reason, errorDetail: detail, category: "error" };
+    return resultFromError(url, err);
   }
 }
 
-async function checkWithGet(url) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
-
+async function checkWithGet(url, state) {
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: FETCH_HEADERS,
-      redirect: "follow",
-      signal: controller.signal,
-      credentials: "omit"
-    });
-    clearTimeout(timeoutId);
+    const response = await request(url, "GET", state);
+    return resultFromResponse(url, response);
+  } catch (err) {
+    return resultFromError(url, err);
+  }
+}
 
-    const redirected = response.redirected;
-    const finalUrl = response.url;
+function resultFromResponse(url, response) {
+  const redirected = response.redirected;
+  const finalUrl = response.url;
 
-    if (redirected && response.ok) {
-      return {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        category: "redirect",
-        redirectedTo: finalUrl
-      };
-    }
-
-    // Sites like LinkedIn return 999 to block automated requests —
-    // report it clearly so the user understands it's not truly broken
-    if (response.status === 999) {
-      return {
-        url,
-        status: 999,
-        statusText: "Blocked",
-        errorDetail: "This site blocks automated link checking (status 999)",
-        category: "error"
-      };
-    }
-
+  // A successful final response after a redirect is still a redirect result.
+  if (redirected && response.ok) {
     return {
       url,
       status: response.status,
       statusText: response.statusText,
-      category: categorize(response.status),
+      category: "redirect",
+      redirectedTo: finalUrl
+    };
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    return {
+      url,
+      status: response.status,
+      statusText: "Needs access",
+      errorDetail: "The destination requires access or declined this request; verify it in a browser.",
+      category: "unverified",
       redirectedTo: redirected ? finalUrl : null
     };
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err.name === "AbortError") {
-      return { url, status: 0, statusText: "Timeout", errorDetail: "Request timed out after 10 seconds", category: "timeout" };
-    }
-    const { reason, detail } = classifyNetworkError(err);
-    return { url, status: 0, statusText: reason, errorDetail: detail, category: "error" };
   }
+
+  if (response.status === 429) {
+    return {
+      url,
+      status: response.status,
+      statusText: "Rate limited",
+      errorDetail: "The destination is rate limiting automated checks; verify it again later.",
+      category: "unverified",
+      redirectedTo: redirected ? finalUrl : null
+    };
+  }
+
+  if (response.status === 999) {
+    return {
+      url,
+      status: 999,
+      statusText: "Blocked",
+      errorDetail: "This site blocks automated link checking (status 999)",
+      category: "error",
+      redirectedTo: redirected ? finalUrl : null
+    };
+  }
+
+  return {
+    url,
+    status: response.status,
+    statusText: response.statusText,
+    category: categorize(response.status),
+    redirectedTo: redirected ? finalUrl : null
+  };
+}
+
+function resultFromError(url, err) {
+  if (err && err.name === "AbortError") {
+    return {
+      url,
+      status: 0,
+      statusText: "Timeout",
+      errorDetail: "Request timed out after 10 seconds",
+      category: "timeout"
+    };
+  }
+  const { reason, detail } = classifyNetworkError(err || {});
+  return { url, status: 0, statusText: reason, errorDetail: detail, category: "error" };
 }
 
 function classifyNetworkError(err) {
