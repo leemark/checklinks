@@ -65,6 +65,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       cancelled: false,
       scanId,
       documentId,
+      // The scanned page's URL, used to recognize same-site links that may
+      // only exist for signed-in visitors.
+      pageUrl: (sender && (sender.url || (sender.tab && sender.tab.url))) || "",
       controllers: new Set()
     };
     tabState[tabId] = state;
@@ -269,12 +272,18 @@ async function checkSingleLink(url, state) {
   try {
     const response = await request(url, "HEAD", state);
 
-    // Some servers reject HEAD or block it — retry with GET.
-    if (response.status === 405 || response.status === 403 || response.status === 999) {
+    // Some servers reject HEAD, block it, or answer it with a 404 even though
+    // the page loads normally — confirm with GET before reporting a failure.
+    if (
+      response.status === 404 ||
+      response.status === 405 ||
+      response.status === 403 ||
+      response.status === 999
+    ) {
       return await checkWithGet(url, state);
     }
 
-    return resultFromResponse(url, response);
+    return withSignInHint(resultFromResponse(url, response), state);
   } catch (err) {
     return resultFromError(url, err);
   }
@@ -283,9 +292,40 @@ async function checkSingleLink(url, state) {
 async function checkWithGet(url, state) {
   try {
     const response = await request(url, "GET", state);
-    return resultFromResponse(url, response);
+    return withSignInHint(resultFromResponse(url, response), state);
   } catch (err) {
     return resultFromError(url, err);
+  }
+}
+
+// Checks run signed out (credentials are never sent, so a scan cannot follow
+// logout links or trigger account actions). Many sites, GitHub included, answer
+// signed-out requests for account-only pages with 404. A 404 on the same site
+// as the scanned page is therefore reported as unverified rather than broken.
+function withSignInHint(result, state) {
+  if (
+    result &&
+    result.status === 404 &&
+    result.category === "client_error" &&
+    isSameSite(result.url, state && state.pageUrl)
+  ) {
+    return {
+      ...result,
+      statusText: "May need sign-in",
+      errorDetail: "This same-site page returned 404 to a signed-out check. Sites often hide sign-in-only pages this way; open it in your browser to confirm.",
+      category: "unverified"
+    };
+  }
+  return result;
+}
+
+function isSameSite(linkUrl, pageUrl) {
+  if (!linkUrl || !pageUrl) return false;
+  try {
+    const host = (value) => new URL(value).hostname.toLowerCase().replace(/^www\./, "");
+    return host(linkUrl) === host(pageUrl);
+  } catch (_) {
+    return false;
   }
 }
 
