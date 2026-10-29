@@ -63,6 +63,7 @@ function harness(fetchImpl, options = {}) {
 
   const context = vm.createContext({
     AbortController,
+    URL,
     clearTimeout,
     fetch: fetchImpl,
     setTimeout: (fn, ms) => setTimeout(fn, ms === 250 ? 0 : ms),
@@ -210,7 +211,7 @@ test("replacement scan does not deliver results from the old document", async ()
   assert.deepEqual(plain(newStart.response), { status: "started", total: 1, scanId: "new-scan" });
   assert.equal(requests.get("https://example.test/old").aborted, true);
 
-  newRequest.resolve(response(404, "https://example.test/new"));
+  newRequest.resolve(response(500, "https://example.test/new"));
   await flush();
 
   assert.deepEqual(h.messages.map(({ message }) => ({ type: message.type, scanId: message.scanId })), [
@@ -332,7 +333,7 @@ test("failed old receiver delivery cancels its job before replacement", async ()
     { type: "CHECK_LINKS", scanId: "new-scan", payload: { links: ["https://example.test/new"] } },
     { tab: { id: 7 }, documentId: "new-document" }
   );
-  fresh.resolve(response(404, "https://example.test/new"));
+  fresh.resolve(response(500, "https://example.test/new"));
   await flush();
   assert.deepEqual(sent.map(({ message }) => ({ type: message.type, scanId: message.scanId })), [
     { type: "LINK_RESULT", scanId: "new-scan" },
@@ -402,4 +403,48 @@ test("unsupported-page feedback is set on failure and cleared after success", as
   await h.click({ id: 12 });
   assert.deepEqual(plain(h.badges[1]), { tabId: 12, text: "" });
   assert.deepEqual(plain(h.titles[1]), { tabId: 12, title: "" });
+});
+
+test("retries a HEAD 404 with GET and reports the page as OK when GET succeeds", async () => {
+  const calls = [];
+  const h = harness(async (url, options) => {
+    calls.push(options.method);
+    return response(options.method === "HEAD" ? 404 : 200, url);
+  });
+
+  const result = await h.context.checkSingleLink("https://other.test/page");
+  assert.equal(result.status, 200);
+  assert.equal(result.category, "ok");
+  assert.deepEqual(calls, ["HEAD", "GET"]);
+});
+
+test("same-site 404s are unverified, other-site 404s stay broken", async () => {
+  const h = harness(async (url) => response(404, url));
+  const state = { pageUrl: "https://www.github.com/leemark/checklinks", controllers: new Set() };
+
+  const sameSite = await h.context.checkSingleLink("https://github.com/leemark/checklinks/settings", state);
+  assert.equal(sameSite.status, 404);
+  assert.equal(sameSite.category, "unverified");
+  assert.equal(sameSite.statusText, "May need sign-in");
+  assert.match(sameSite.errorDetail, /sign-in/i);
+
+  const otherSite = await h.context.checkSingleLink("https://example.test/missing", state);
+  assert.equal(otherSite.status, 404);
+  assert.equal(otherSite.category, "client_error");
+
+  const noPage = await h.context.checkSingleLink("https://github.com/missing");
+  assert.equal(noPage.category, "client_error");
+});
+
+test("a scan records the sender page URL for same-site checks", async () => {
+  const h = harness(async (url) => response(404, url));
+  h.receive(
+    { type: "CHECK_LINKS", scanId: "s1", payload: { links: ["https://github.com/settings"] } },
+    { tab: { id: 7, url: "https://github.com/leemark" }, url: "https://github.com/leemark" }
+  );
+  await flush();
+  await flush();
+  const result = h.messages.find((m) => m.message.type === "LINK_RESULT").message.payload;
+  assert.equal(result.category, "unverified");
+  assert.equal(result.statusText, "May need sign-in");
 });

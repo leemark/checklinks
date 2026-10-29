@@ -1,6 +1,6 @@
 # CheckLinks Chrome Web Store presentation
 
-Listing copy for CheckLinks 1.1.0.
+Listing copy for CheckLinks 1.1.1.
 
 ## Product details
 

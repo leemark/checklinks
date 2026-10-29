@@ -104,7 +104,7 @@
       <section aria-labelledby="works-heading">
         <h2 id="works-heading">How the extension works</h2>
         <p>When you click the CheckLinks icon on a page, the extension reads unique HTTP/HTTPS links in the current main document at that moment, groups duplicate occurrences, and displays results on the page and in a floating panel. It does not inspect frames or shadow roots, and links added later require a new scan. Fragment-only links and <code>mailto:</code>, <code>tel:</code>, and <code>javascript:</code> links are skipped and not tested.</p>
-        <p>Requests use HEAD with GET fallback for 403, 405, and 999 responses. They omit credentials, follow redirects, and report the final response and URL. 401 and 403 appear as <strong>Needs access</strong>, while 429 appears as <strong>Rate limited</strong>, under Other because those responses are unverified.</p>
+        <p>Requests use HEAD with GET fallback for 403, 404, 405, and 999 responses. They omit credentials, follow redirects, and report the final response and URL. 401 and 403 appear as <strong>Needs access</strong>, while 429 appears as <strong>Rate limited</strong>, under Other because those responses are unverified. A 404 from the same site as the scanned page appears as <strong>May need sign-in</strong> under Other, because many sites answer signed-out requests for account-only pages with 404.</p>
         <p>Link-check requests go directly from your browser to the linked destinations. Those destination servers may receive normal request information under their own privacy policies; CheckLinks does not proxy or process the requests through a separate service.</p>
       </section>
 

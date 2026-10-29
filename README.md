@@ -60,8 +60,8 @@ The extension uses Chrome's Manifest V3 architecture:
 |----------|----------------|-------|---------|
 | OK | 2xx | Green | The destination returned a successful response. |
 | Redirect | Followed redirect | Amber | The request ended at another URL; the row shows the final response. |
-| Broken | Most 4xx/5xx | Red | The destination returned an HTTP error. 401 and 403 are reported as **Needs access** under Other. |
-| Other | 401/403, 429, blocked, timeout, network error, or skipped | Gray | The result is unverified or was not tested. 429 is **Rate limited** and is not necessarily broken. |
+| Broken | Most 4xx/5xx | Red | The destination returned an HTTP error. 401 and 403 are reported as **Needs access** under Other, and a same-site 404 as **May need sign-in**. |
+| Other | 401/403, same-site 404, 429, blocked, timeout, network error, or skipped | Gray | The result is unverified or was not tested. 429 is **Rate limited** and is not necessarily broken. |
 
 Network failures use a general error description. CheckLinks does not promise to identify a precise DNS, TLS, or connection-refused cause from a browser fetch failure.
 

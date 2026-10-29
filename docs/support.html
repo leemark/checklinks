@@ -42,7 +42,7 @@
     <header class="article-header">
       <p class="eyebrow">Support</p>
       <h1>CheckLinks support and known limitations</h1>
-      <p class="article-meta"><span>By Mark Lee</span><span>Applies to CheckLinks 1.1.0</span></p>
+      <p class="article-meta"><span>By Mark Lee</span><span>Applies to CheckLinks 1.1.1</span></p>
     </header>
 
     <div class="direct-answer">
@@ -81,7 +81,7 @@
           <figcaption>CheckLinks separates HTTP failures from timeouts and network errors so you can investigate instead of treating every failure as a 404.</figcaption>
         </figure>
         <div class="callout">
-          <p><strong>A status is an observation, not a verdict.</strong> A 404 or 500 response is strong evidence of a problem. 401 and 403 appear as <strong>Needs access</strong>, while 429 appears as <strong>Rate limited</strong>, under <strong>Other</strong>; these results are unverified and are not necessarily broken. A timeout, blocked response, or generic network error needs context because the destination may answer differently to a normal click or an authenticated user.</p>
+          <p><strong>A status is an observation, not a verdict.</strong> A 404 or 500 response is strong evidence of a problem. 401 and 403 appear as <strong>Needs access</strong>, while 429 appears as <strong>Rate limited</strong>, under <strong>Other</strong>. A 404 from the same site as the page you scanned appears as <strong>May need sign-in</strong>, also under <strong>Other</strong>; these results are unverified and are not necessarily broken. A timeout, blocked response, or generic network error needs context because the destination may answer differently to a normal click or an authenticated user.</p>
         </div>
       </section>
 
@@ -90,7 +90,7 @@
         <ul class="limitation-list">
           <li><strong>One open page at a time.</strong> CheckLinks checks unique HTTP/HTTPS links in the current main document at scan time and groups duplicate occurrences. It does not crawl an entire website, inspect frames or shadow roots, or run scheduled monitoring.</li>
           <li><strong>Restricted browser pages.</strong> Chrome does not allow extensions to inject into browser-controlled pages such as <code>chrome://</code> URLs. The Chrome Web Store and some other protected surfaces may also restrict extension behavior.</li>
-          <li><strong>No login cookies in link-check requests.</strong> CheckLinks omits credentials when it checks a URL. A private or session-dependent destination may therefore return a login page, redirect, Needs access, or blocked result even though it works after a normal signed-in click.</li>
+          <li><strong>No login cookies in link-check requests.</strong> CheckLinks omits credentials when it checks a URL. A private or session-dependent destination may therefore return a login page, redirect, Needs access, May need sign-in, or blocked result even though it works after a normal signed-in click.</li>
           <li><strong>Sites can block automated checks.</strong> Rate limits, bot protection, firewalls, VPN rules, browser policies, or other network conditions can produce a blocked, generic network-error, or timeout result. CheckLinks does not promise to identify a precise DNS, TLS, or connection-refused cause from a browser fetch failure.</li>
           <li><strong>Ten-second timeout.</strong> A very slow destination can time out even if it eventually loads. Scans are throttled to be respectful, so pages with many unique links take longer.</li>
           <li><strong>Skipped link types.</strong> Pure fragment links and non-web schemes such as <code>mailto:</code>, <code>tel:</code>, and <code>javascript:</code> are skipped and not tested.</li>
